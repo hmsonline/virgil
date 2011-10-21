@@ -20,23 +20,16 @@ cwd=`dirname $0`
 cassandra_home="$cwd/../../../"
 
 # general jars.
-for jar in $cassandra_home/lib/*.jar $cassandra_home/build/lib/jars/*.jar; do
-    CLASSPATH=$CLASSPATH:$jar
-done
+#for jar in $cassandra_home/lib/*.jar $cassandra_home/build/lib/jars/*.jar; do
+#    CLASSPATH=$CLASSPATH:$jar
+#done
 
 # general jars.
-for jar in ./lib/*.jar; do
+for jar in ./target/lib/*.jar; do
     CLASSPATH=$CLASSPATH:$jar
 done
 
-# cassandra_storage jar.
-STORAGE_JAR=`ls -1 $cwd/../build/*.jar`
-if [ ! -e $STORAGE_JAR ]; then
-    echo "Unable to locate cassandra_storage jar: please run ant." >&2
-    exit 1
-fi
-CLASSPATH=$CLASSPATH:$STORAGE_JAR
-CLASSPATH=$CLASSPATH:../../conf
 CLASSPATH=$CLASSPATH:src/main/resources
+CLASSPATH=$CLASSPATH:target/classes
 
 exec java -cp $CLASSPATH org.apache.cassandra.http.HttpDaemon
