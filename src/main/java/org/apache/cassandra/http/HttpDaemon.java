@@ -29,8 +29,8 @@ import org.slf4j.LoggerFactory;
 public class HttpDaemon extends AbstractCassandraDaemon
 {
     private static Logger logger = LoggerFactory.getLogger(HttpDaemon.class);
-
-    private IHttpServer http;
+    private static HttpDaemon daemon = null;
+    private static IHttpServer http;
     private static CassandraStorage dataService;
 
     @Override
@@ -42,7 +42,8 @@ public class HttpDaemon extends AbstractCassandraDaemon
     @Override
     public void stopServer()
     {
-        http.start();
+    	logger.info("Shutting down HttpDaemon and HttpServer.");
+        http.stop();
     }
 
     @Override
@@ -66,6 +67,11 @@ public class HttpDaemon extends AbstractCassandraDaemon
     {
         return dataService;
     }
+    
+    public static void shutdown()
+    {
+        daemon.deactivate();
+    }
 
     public static void main(String args[])
     {
@@ -75,7 +81,8 @@ public class HttpDaemon extends AbstractCassandraDaemon
         try {
             url.openStream();
             System.setProperty("cassandra.config", CONFIG_URL);
-            new HttpDaemon().activate();
+            daemon = new HttpDaemon();
+            daemon.activate();
         } catch (Exception e){
             e.printStackTrace();
         }

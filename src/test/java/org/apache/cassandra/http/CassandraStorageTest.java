@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 import org.apache.cassandra.thrift.ConsistencyLevel;
 import org.apache.cassandra.thrift.InvalidRequestException;
 import org.json.simple.JSONObject;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -21,6 +22,12 @@ public class CassandraStorageTest
         HttpDaemon.main(null);
     }
 
+    @AfterClass
+    public static void teardown() throws Exception
+    {
+        HttpDaemon.shutdown();
+    }
+    
     @SuppressWarnings("unchecked")
     @Test
     public void testDatabaseServices() throws Exception

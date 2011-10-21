@@ -9,6 +9,7 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -27,6 +28,13 @@ public class HttpTest
     public static void setup() throws Exception
     {
         HttpDaemon.main(null);
+        Thread.currentThread().sleep(1000);
+    }
+    
+    @AfterClass
+    public static void teardown() throws Exception
+    {
+        HttpDaemon.shutdown();
     }
 
     @Test
