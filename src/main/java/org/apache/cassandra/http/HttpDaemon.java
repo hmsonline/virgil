@@ -23,13 +23,15 @@ import java.net.URL;
 
 import org.apache.cassandra.config.DatabaseDescriptor;
 import org.apache.cassandra.service.AbstractCassandraDaemon;
+import org.apache.cassandra.thrift.CassandraDaemon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class HttpDaemon extends AbstractCassandraDaemon
 {
     private static Logger logger = LoggerFactory.getLogger(HttpDaemon.class);
-    private static HttpDaemon daemon = null;
+    private static HttpDaemon httpDaemon = null;
+    private static CassandraDaemon cassandraDaemon = null;
     private static IHttpServer http;
     private static CassandraStorage dataService;
 
@@ -70,7 +72,10 @@ public class HttpDaemon extends AbstractCassandraDaemon
     
     public static void shutdown()
     {
-        daemon.deactivate();
+        httpDaemon.stopServer();
+        httpDaemon.deactivate();
+        cassandraDaemon.stop();
+        cassandraDaemon.deactivate();
     }
 
     public static void main(String args[])
@@ -81,8 +86,10 @@ public class HttpDaemon extends AbstractCassandraDaemon
         try {
             url.openStream();
             System.setProperty("cassandra.config", CONFIG_URL);
-            daemon = new HttpDaemon();
-            daemon.activate();
+            cassandraDaemon = new CassandraDaemon();
+            cassandraDaemon.activate();
+            httpDaemon = new HttpDaemon();
+            httpDaemon.activate();
         } catch (Exception e){
             e.printStackTrace();
         }
