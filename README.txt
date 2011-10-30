@@ -3,10 +3,19 @@
 ===============================================================================
 Getting Started
 ===============================================================================
-1. Compile the project using "ant"
-   * This will pull dependencies using ivy, then build the rest layer.
+1. Compile the project using "mvn install"
+   * This will pull dependencies, then build the rest layer.
+   * By default, the REST service will use the target directory for
+     cassandra data storage.
+     
+     This can be overridden using the maven property "cassandra.data.dir"
+     
+     For example to use the cassandra default, specify: "/var/lib/":
+     mvn install -Dcassandra.data.dir=/var/lib
+     
+     This will make cassandra use /var/lib/cassandra as the data directory.
 
-2. Run the daemon using "bin/rest_cassandra"
+2. Run the daemon using "bin/virgil"
    * This will start a cassandra server using the cassandra.yaml.
 
 3. This uses the log4j.xml file in src/main/resources, which logs http activity to http.log
