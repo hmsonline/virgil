@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.cassandra.http.index.Indexer;
 import org.apache.cassandra.thrift.CassandraServer;
 import org.apache.cassandra.thrift.CfDef;
 import org.apache.cassandra.thrift.Column;
@@ -40,9 +41,15 @@ import org.json.simple.JSONObject;
 
 public class CassandraStorage 
 {
-    private static final int MAX_COLUMNS = 100;
+    private static final int MAX_COLUMNS = 1000;
     static public CassandraServer server = new CassandraServer();
+    private Indexer indexer = null;
 
+    // TODO: Come back and make indexing AOP
+    public CassandraStorage(Indexer indexer){
+    	this.indexer = indexer;
+    }
+    
     /*
      * Set's thread local value on the server.
      */

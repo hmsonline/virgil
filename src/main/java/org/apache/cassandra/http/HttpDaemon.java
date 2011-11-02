@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.net.URL;
 
 import org.apache.cassandra.config.DatabaseDescriptor;
+import org.apache.cassandra.http.index.SolrIndexer;
 import org.apache.cassandra.service.AbstractCassandraDaemon;
 import org.apache.cassandra.thrift.CassandraDaemon;
 import org.slf4j.Logger;
@@ -55,7 +56,8 @@ public class HttpDaemon extends AbstractCassandraDaemon
         try
         {
             listenPort = 8080;
-            dataService = new CassandraStorage();
+            SolrIndexer indexer = new SolrIndexer();
+            dataService = new CassandraStorage(indexer);
             logger.info("Starting server on [" + listenAddr + ":" + listenPort + "]");
             http = new ApacheCxfHttpServer(this.listenAddr.getHostName(), this.listenPort, dataService);
         }

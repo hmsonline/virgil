@@ -7,6 +7,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 
+import org.apache.cassandra.http.index.Indexer;
 import org.apache.cassandra.thrift.ConsistencyLevel;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
