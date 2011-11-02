@@ -28,7 +28,7 @@ public class HttpTest
     public static void setup() throws Exception
     {
         HttpDaemon.main(null);
-        Thread.currentThread().sleep(1000);
+		Thread.sleep(1000);
     }
     
     @AfterClass
@@ -56,7 +56,7 @@ public class HttpTest
 
         // INSERT ROW
         post = new PostMethod(BASE_URL + KEYSPACE + "/" + COLUMN_FAMILY + "/" + KEY);
-        RequestEntity requestEntity = new StringRequestEntity("{\"ADDR1\":\"1234 Fun St.\",\"CITY\":\"Souderton.\"}");
+        RequestEntity requestEntity = new StringRequestEntity("{\"ADDR1\":\"1234 Fun St.\",\"CITY\":\"Souderton.\"}", "appication/json", "UTF8");
         post.setRequestEntity(requestEntity);
         this.send(client, post, 204);
 
@@ -69,7 +69,7 @@ public class HttpTest
 
         // INSERT COLUMN
         post = new PostMethod(BASE_URL + KEYSPACE + "/" + COLUMN_FAMILY + "/" + KEY +"/STATE/");
-        requestEntity = new StringRequestEntity("CA");
+        requestEntity = new StringRequestEntity("CA", "appication/json", "UTF8");
         post.setRequestEntity(requestEntity);
         this.send(client, post, 204);
 

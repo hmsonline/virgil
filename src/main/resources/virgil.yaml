@@ -1,0 +1,2 @@
+# URL to a SOLR instance that can be used for indexing.
+solr_host: http://localhost:8983/solr/
