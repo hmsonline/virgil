@@ -6,7 +6,7 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.junit.AfterClass;
@@ -47,18 +47,18 @@ public class HttpTest
         this.send(client, delete, -1);
 
         // CREATE KEYSPACE
-        PostMethod post = new PostMethod(BASE_URL + KEYSPACE + "/");
-        this.send(client, post, 204);
+        PutMethod put = new PutMethod(BASE_URL + KEYSPACE + "/");
+        this.send(client, put, 204);
 
         // CREATE COLUMN FAMILY
-        post = new PostMethod(BASE_URL + KEYSPACE + "/" + COLUMN_FAMILY + "/");
-        this.send(client, post, 204);
+        put = new PutMethod(BASE_URL + KEYSPACE + "/" + COLUMN_FAMILY + "/");
+        this.send(client, put, 204);
 
         // INSERT ROW
-        post = new PostMethod(BASE_URL + KEYSPACE + "/" + COLUMN_FAMILY + "/" + KEY);
+        put = new PutMethod(BASE_URL + KEYSPACE + "/" + COLUMN_FAMILY + "/" + KEY);
         RequestEntity requestEntity = new StringRequestEntity("{\"ADDR1\":\"1234 Fun St.\",\"CITY\":\"Souderton.\"}", "appication/json", "UTF8");
-        post.setRequestEntity(requestEntity);
-        this.send(client, post, 204);
+        put.setRequestEntity(requestEntity);
+        this.send(client, put, 204);
 
         // FETCH ROW (VERIFY ROW INSERT)
         GetMethod get = new GetMethod(BASE_URL + KEYSPACE + "/" + COLUMN_FAMILY + "/" + KEY);
@@ -68,10 +68,10 @@ public class HttpTest
         logger.debug(body);
 
         // INSERT COLUMN
-        post = new PostMethod(BASE_URL + KEYSPACE + "/" + COLUMN_FAMILY + "/" + KEY +"/STATE/");
+        put = new PutMethod(BASE_URL + KEYSPACE + "/" + COLUMN_FAMILY + "/" + KEY +"/STATE/");
         requestEntity = new StringRequestEntity("CA", "appication/json", "UTF8");
-        post.setRequestEntity(requestEntity);
-        this.send(client, post, 204);
+        put.setRequestEntity(requestEntity);
+        this.send(client, put, 204);
 
         // FETCH ROW (VERIFY COLUMN INSERT)
         get = new GetMethod(BASE_URL + KEYSPACE + "/" + COLUMN_FAMILY + "/" + KEY);

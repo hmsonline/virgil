@@ -2,7 +2,7 @@ package org.apache.cassandra.http;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
-import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -32,7 +32,7 @@ public class CassandraRestService
     /*
      * Creates a key space
      */
-    @POST
+    @PUT
     @Path("/data/{keyspace}")
     @Produces({ "application/json" })
     public void createKeyspace(@PathParam("keyspace") String keyspace) throws Exception
@@ -62,7 +62,7 @@ public class CassandraRestService
     /*
      * Creates a new column family.
      */
-    @POST
+    @PUT
     @Path("/data/{keyspace}/{columnFamily}")
     @Produces({ "application/json" })
     public void createColumnFamily(@PathParam("keyspace") String keyspace,
@@ -96,7 +96,7 @@ public class CassandraRestService
     /*
      * Add's a row, each entry in the JSON map is a column
      */
-    @POST
+    @PUT
     @Path("/data/{keyspace}/{columnFamily}/{key}")
     @Produces({ "application/json" })
     public void addRow(@PathParam("keyspace") String keyspace,
@@ -173,7 +173,7 @@ public class CassandraRestService
     /*
      * Adds a column
      */
-    @POST
+    @PUT
     @Path("/data/{keyspace}/{columnFamily}/{key}/{columnName}")
     @Produces({ "application/json" })
     public void addColumn(@PathParam("keyspace") String keyspace,

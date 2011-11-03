@@ -30,15 +30,15 @@ REST Commands
 
 Create Keyspace (playground)
 ----------------------------
-   curl -X POST http://localhost:8080/virgil/data/playground/
+   curl -X PUT http://localhost:8080/virgil/data/playground/
 
 Create Column Family (toys)
 -------------------------------------------------------------------------------------------------------
-   curl -X POST http://localhost:8080/virgil/data/playground/toys/
+   curl -X PUT http://localhost:8080/virgil/data/playground/toys/
 
 Insert Row (rowkey = "swingset", columns [ foo => 1, bar => 22 ])
 -------------------------------------------------------------------------------------------------------
-   curl -X POST http://localhost:8080/virgil/data/playground/toys/swingset -d "{\"foo\":\"1\",\"bar\":\"33\"}"
+   curl -X PUT http://localhost:8080/virgil/data/playground/toys/swingset -d "{\"foo\":\"1\",\"bar\":\"33\"}"
 
 Fetch Row (rowkey = "swingset")
 -------------------------------------------------------------------------------------------------------
@@ -46,7 +46,7 @@ Fetch Row (rowkey = "swingset")
 
 Insert Column (rowkey = "swingset", columns [ snaf => lisa ])
 -------------------------------------------------------------------------------------------------------
-   curl -X POST http://localhost:8080/virgil/data/playground/toys/swingset/snaf -d "lisa"
+   curl -X PUT http://localhost:8080/virgil/data/playground/toys/swingset/snaf -d "lisa"
 
 Delete Column (rowkey = "swingset")
 -------------------------------------------------------------------------------------------------------
