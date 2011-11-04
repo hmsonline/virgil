@@ -1,3 +1,6 @@
 # URL to a SOLR instance that can be used for indexing.
 solr_host: http://localhost:8983/solr/
 enable_indexing: true
+
+http_listen_port: 8080
+

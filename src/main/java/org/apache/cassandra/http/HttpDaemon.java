@@ -23,32 +23,30 @@ import java.net.URL;
 
 import org.apache.cassandra.config.DatabaseDescriptor;
 import org.apache.cassandra.http.index.SolrIndexer;
-import org.apache.cassandra.service.AbstractCassandraDaemon;
 import org.apache.cassandra.thrift.CassandraDaemon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HttpDaemon extends AbstractCassandraDaemon
+public class HttpDaemon extends CassandraDaemon
 {
     private static Logger logger = LoggerFactory.getLogger(HttpDaemon.class);
     private static HttpDaemon httpDaemon = null;
-    private static CassandraDaemon cassandraDaemon = null;
     private static IHttpServer http;
     private static CassandraStorage dataService;
 
     @Override
     public void startServer()
     {
-        http.start();        
+    	super.startServer();
+    	http.start();
     }
 
     @Override
     public void stopServer()
     {
+    	super.stopServer();
     	logger.info("Shutting down HttpDaemon and HttpServer.");
         http.stop();
-        cassandraDaemon.stop();
-        cassandraDaemon.deactivate();
     }
 
     @Override
@@ -57,11 +55,11 @@ public class HttpDaemon extends AbstractCassandraDaemon
         super.setup();
         try
         {
-            listenPort = 8080;
             SolrIndexer indexer = new SolrIndexer();
             dataService = new CassandraStorage(indexer);
-            logger.info("Starting server on [" + listenAddr + ":" + listenPort + "]");
-            http = new ApacheCxfHttpServer(this.listenAddr.getHostName(), this.listenPort, dataService);
+            logger.info("Starting server on [" + listenAddr + ":" + VirgilConfig.getListenPort() + "]");
+            http = new ApacheCxfHttpServer(this.listenAddr.getHostName(), VirgilConfig.getListenPort(), dataService);
+
         }
         catch (Exception wtf)
         {
@@ -78,8 +76,6 @@ public class HttpDaemon extends AbstractCassandraDaemon
     {
         httpDaemon.stopServer();
         httpDaemon.deactivate();
-        cassandraDaemon.stop();
-        cassandraDaemon.deactivate();
     }
 
     public static void main(String args[])
@@ -90,10 +86,9 @@ public class HttpDaemon extends AbstractCassandraDaemon
         try {
             url.openStream();
             System.setProperty("cassandra.config", CONFIG_URL);
+            System.setProperty("cassandra-foreground", "true");
             httpDaemon = new HttpDaemon();
             httpDaemon.activate();      
-            cassandraDaemon = new CassandraDaemon();
-            cassandraDaemon.activate();
         } catch (Exception e){
             e.printStackTrace();
         }
