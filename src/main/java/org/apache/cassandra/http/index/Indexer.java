@@ -12,7 +12,7 @@ public interface Indexer {
 	public void index(String columnFamily, String rowKey, String json) throws Exception;
 	
 	public void index(String columnFamily, String rowKey, JSONObject json) throws Exception;
-	
+
 	/** 
 	 * Removes a row from the index.
 	 */

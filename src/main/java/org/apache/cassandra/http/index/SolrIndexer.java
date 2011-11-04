@@ -48,6 +48,7 @@ public class SolrIndexer implements Indexer {
 		post.releaseConnection();
 	}
 	
+
 	@Override
 	public void delete(String columnFamily, String rowKey) throws Exception{
 		HttpClient client = new HttpClient();
