@@ -21,12 +21,17 @@ public class SolrIndexer implements Indexer {
 		solrUrl = VirgilConfig.getConfig().get(SOLR_CONFIG_PARAM);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void index(String columnFamily, String rowKey, String json) throws Exception {
+        JSONObject row = (JSONObject) JSONValue.parse(json);
+        index(columnFamily, rowKey, row);
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public void index(String columnFamily, String rowKey, JSONObject row) throws Exception {
 		HttpClient client = new HttpClient();
 		PostMethod post = new PostMethod(solrUrl + "update/json?commit=true");
-        JSONObject row = (JSONObject) JSONValue.parse(json);
         JSONObject document = new JSONObject();
 
         document.put("id", this.getDocumentId(columnFamily, rowKey));

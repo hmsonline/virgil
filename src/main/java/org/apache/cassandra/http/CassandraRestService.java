@@ -6,8 +6,8 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 
-import org.apache.cassandra.http.index.Indexer;
 import org.apache.cassandra.thrift.ConsistencyLevel;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -101,7 +101,7 @@ public class CassandraRestService
     @Produces({ "application/json" })
     public void addRow(@PathParam("keyspace") String keyspace,
             @PathParam("columnFamily") String columnFamily, @PathParam("key") String key,
-            String body) throws Exception
+            @QueryParam("index") boolean index, String body) throws Exception
     {
         cassandraStorage.setKeyspace(keyspace);
         JSONObject json = (JSONObject) JSONValue.parse(body);
@@ -112,7 +112,7 @@ public class CassandraRestService
         if (logger.isDebugEnabled())
             logger.debug("Setting column [" + keyspace + "]:[" + columnFamily + "]:[" + key + "] -> [" + json + "]");
 
-        cassandraStorage.setColumn(keyspace, columnFamily, key, json, ConsistencyLevel.ALL);
+        cassandraStorage.setColumn(keyspace, columnFamily, key, json, ConsistencyLevel.ALL, index);
     }
 
     /*
@@ -180,12 +180,13 @@ public class CassandraRestService
             @PathParam("columnFamily") String columnFamily,
             @PathParam("key") String key,
             @PathParam("columnName") String columnName,
+            @QueryParam("index") boolean index,
             String body) throws Exception
     {
         cassandraStorage.setKeyspace(keyspace);
         if (logger.isDebugEnabled())
             logger.debug("Deleting row [" + keyspace + "]:[" + columnFamily + "]:[" + key + "] => [" + body + "]");
-        cassandraStorage.addColumn(keyspace, columnFamily, key, columnName, body, ConsistencyLevel.ALL);
+        cassandraStorage.addColumn(keyspace, columnFamily, key, columnName, body, ConsistencyLevel.ALL, index);
     }
     
     /*

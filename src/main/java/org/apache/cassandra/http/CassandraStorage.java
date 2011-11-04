@@ -89,15 +89,15 @@ public class CassandraStorage
 
     @SuppressWarnings("unchecked")
     public void addColumn(String keyspace, String column_family, String rowkey, String column_name, String value,
-            ConsistencyLevel consistency_level) throws Exception
+            ConsistencyLevel consistency_level, boolean index) throws Exception
     {
         JSONObject json = new JSONObject();
         json.put(column_name, value);
-        this.setColumn(keyspace, column_family, rowkey, json, consistency_level);
+        this.setColumn(keyspace, column_family, rowkey, json, consistency_level, index);
     }
     
     public void setColumn(String keyspace, String column_family, String key, JSONObject json,
-            ConsistencyLevel consistency_level) throws Exception
+            ConsistencyLevel consistency_level, boolean index) throws Exception
     {
         List<Mutation> slice = new ArrayList<Mutation>();
         for (Object field : json.keySet())
@@ -120,6 +120,10 @@ public class CassandraStorage
         cfMutations.put(column_family, slice);
         mutationMap.put(ByteBufferUtil.bytes(key), cfMutations);
         server.batch_mutate(mutationMap, consistency_level);
+        
+        
+        if (index)
+        	indexer.index(column_family, key, json.toString());  // Need not to
     }
 
     public void deleteColumn(String keyspace, String column_family, String key, String column,
