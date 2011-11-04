@@ -1,5 +1,7 @@
 package org.apache.cassandra.http.index;
 
+import org.json.simple.JSONObject;
+
 public interface Indexer {
 
 	/** 
@@ -8,6 +10,8 @@ public interface Indexer {
 	 * @param json
 	 */
 	public void index(String columnFamily, String rowKey, String json) throws Exception;
+	
+	public void index(String columnFamily, String rowKey, JSONObject json) throws Exception;
 	
 	/** 
 	 * Removes a row from the index.

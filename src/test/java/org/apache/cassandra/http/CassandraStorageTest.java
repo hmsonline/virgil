@@ -50,14 +50,14 @@ public class CassandraStorageTest
 
 
         // INSERT THE ROW
-        dataService.setColumn(KEYSPACE, COLUMN_FAMILY, KEY, slice, ConsistencyLevel.ONE);
+        dataService.setColumn(KEYSPACE, COLUMN_FAMILY, KEY, slice, ConsistencyLevel.ONE, false);
 
         // FETCH THE ROW (VERIFY INSERT ROW)
         String json = dataService.getSlice(KEYSPACE, COLUMN_FAMILY, KEY, ConsistencyLevel.ONE);
         assertEquals("{\"FIRST_NAME\":\"John\",\"LAST_NAME\":\"Smith\"}", json);
 
         // ADD A COLUMN
-        dataService.addColumn(KEYSPACE, COLUMN_FAMILY, KEY, "STATE", "CA", ConsistencyLevel.ONE);
+        dataService.addColumn(KEYSPACE, COLUMN_FAMILY, KEY, "STATE", "CA", ConsistencyLevel.ONE, false);
 
         // FETCH THE ROW (VERIFY ADD COLUMN)
         json = dataService.getSlice(KEYSPACE, COLUMN_FAMILY, KEY, ConsistencyLevel.ONE);
