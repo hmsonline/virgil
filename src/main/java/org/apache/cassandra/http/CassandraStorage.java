@@ -95,6 +95,14 @@ public class CassandraStorage
         JSONObject json = new JSONObject();
         json.put(column_name, value);
         this.setColumn(keyspace, column_family, rowkey, json, consistency_level, index);
+        
+        // TODO: Revisit adding a single field because it requires a fetch first.
+        if (VirgilConfig.isIndexingEnabled() && index){
+        	String doc = this.getSlice(keyspace, column_family, rowkey, consistency_level);
+        	JSONObject indexJson = (JSONObject) JSONValue.parse(doc);
+        	indexJson.put(column_name, value);
+        	indexer.index(column_family, rowkey, indexJson);        	
+        }
     }
     
     public void setColumn(String keyspace, String column_family, String key, JSONObject json,
