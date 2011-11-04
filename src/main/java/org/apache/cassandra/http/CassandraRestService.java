@@ -138,13 +138,15 @@ public class CassandraRestService
     @Path("/data/{keyspace}/{columnFamily}/{key}")
     @Produces({ "application/json" })
     public void deleteRow(@PathParam("keyspace") String keyspace,
-            @PathParam("columnFamily") String columnFamily, @PathParam("key") String key) throws Exception
+            @PathParam("columnFamily") String columnFamily, 
+            @PathParam("key") String key,
+            @QueryParam("purgeIndex") boolean purgeIndex) throws Exception
     {
         cassandraStorage.setKeyspace(keyspace);
         if (logger.isDebugEnabled())
             logger.debug("Deleting row [" + keyspace + "]:[" + columnFamily + "]:[" + key + "]");
 
-        cassandraStorage.deleteRow(keyspace, columnFamily, key, ConsistencyLevel.ALL);
+        cassandraStorage.deleteRow(keyspace, columnFamily, key, ConsistencyLevel.ALL, purgeIndex);
     }
 
     
@@ -198,11 +200,12 @@ public class CassandraRestService
     public void deleteColumn(@PathParam("keyspace") String keyspace,
             @PathParam("columnFamily") String columnFamily,
             @PathParam("key") String key,
-            @PathParam("columnName") String columnName) throws Exception
+            @PathParam("columnName") String columnName,
+            @QueryParam("purgeIndex") boolean purgeIndex) throws Exception
     {
         cassandraStorage.setKeyspace(keyspace);
         if (logger.isDebugEnabled())
             logger.debug("Deleting row [" + keyspace + "]:[" + columnFamily + "]:[" + key + "]");
-        cassandraStorage.deleteColumn(keyspace, columnFamily, key, columnName, ConsistencyLevel.ALL);
+        cassandraStorage.deleteColumn(keyspace, columnFamily, key, columnName, ConsistencyLevel.ALL, purgeIndex);
     }
 }

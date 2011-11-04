@@ -39,7 +39,7 @@ public class HttpDaemon extends AbstractCassandraDaemon
     @Override
     public void startServer()
     {
-        http.start();
+        http.start();        
     }
 
     @Override
@@ -47,6 +47,8 @@ public class HttpDaemon extends AbstractCassandraDaemon
     {
     	logger.info("Shutting down HttpDaemon and HttpServer.");
         http.stop();
+        cassandraDaemon.stop();
+        cassandraDaemon.deactivate();
     }
 
     @Override
@@ -88,10 +90,10 @@ public class HttpDaemon extends AbstractCassandraDaemon
         try {
             url.openStream();
             System.setProperty("cassandra.config", CONFIG_URL);
+            httpDaemon = new HttpDaemon();
+            httpDaemon.activate();      
             cassandraDaemon = new CassandraDaemon();
             cassandraDaemon.activate();
-            httpDaemon = new HttpDaemon();
-            httpDaemon.activate();
         } catch (Exception e){
             e.printStackTrace();
         }

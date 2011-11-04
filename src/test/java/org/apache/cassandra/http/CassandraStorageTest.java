@@ -17,9 +17,10 @@ public class CassandraStorageTest
     private static final String KEYSPACE = "TEST_KEYSPACE";
 
     @BeforeClass
-    public static void setup()
+    public static void setup() throws Exception
     {
         HttpDaemon.main(null);
+        Thread.sleep(2000);
     }
 
     @AfterClass
@@ -64,7 +65,7 @@ public class CassandraStorageTest
         assertEquals("{\"STATE\":\"CA\",\"FIRST_NAME\":\"John\",\"LAST_NAME\":\"Smith\"}", json);
 
         // DELETE THE ROW
-        dataService.deleteRow(KEYSPACE, COLUMN_FAMILY, "TEST_SLICE", ConsistencyLevel.ONE);
+        dataService.deleteRow(KEYSPACE, COLUMN_FAMILY, "TEST_SLICE", ConsistencyLevel.ONE, false);
         json = dataService.getSlice(KEYSPACE, COLUMN_FAMILY, "TEST_SLICE", ConsistencyLevel.ONE);
         assertEquals(null, json);
 
