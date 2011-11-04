@@ -34,4 +34,4 @@ else
 fi
 
 
-$JAVA -cp $CLASSPATH org.apache.cassandra.http.HttpDaemon
+$JAVA -Dcassandra.data.dir=data -cp $CLASSPATH org.apache.cassandra.http.HttpDaemon

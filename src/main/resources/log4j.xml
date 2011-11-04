@@ -9,7 +9,7 @@
 		</layout>
 	</appender>
 	
-	<appender name="FILE" class="org.apache.log4j.DailyRollingFileAppender">
+	<appender name="HTTP_FILE" class="org.apache.log4j.DailyRollingFileAppender">
 		<param name="file" value="http.log" />
 		<param name="datePattern" value="'.'yyyy-MM" />
 		<param name="append" value="true" />
@@ -19,17 +19,17 @@
 	</appender>
 	
 	<logger name="org.apache.cxf">
-		<level value="WARN" />
-		<appender-ref ref="FILE" />
+		<level value="DEBUG" />
+		<appender-ref ref="HTTP_FILE" />
 	</logger>
 
 	<logger name="org.apache.cassandra">
-		<level value="WARN" />
+		<level value="DEBUG" />
 	</logger>
 
 	<logger name="org.apache.cassandra.http">
 		<level value="DEBUG" />
-		<appender-ref ref="FILE" />
+		<appender-ref ref="HTTP_FILE" />
 	</logger>
 
 	<root>

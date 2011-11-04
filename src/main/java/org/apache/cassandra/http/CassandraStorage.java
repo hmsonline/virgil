@@ -38,6 +38,7 @@ import org.apache.cassandra.thrift.SlicePredicate;
 import org.apache.cassandra.thrift.SliceRange;
 import org.apache.cassandra.utils.ByteBufferUtil;
 import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 
 public class CassandraStorage 
 {
@@ -121,24 +122,39 @@ public class CassandraStorage
         mutationMap.put(ByteBufferUtil.bytes(key), cfMutations);
         server.batch_mutate(mutationMap, consistency_level);
         
-        
-        if (index)
-        	indexer.index(column_family, key, json.toString());  // Need not to
+        if (VirgilConfig.isIndexingEnabled() && index)
+        	indexer.index(column_family, key, json);
     }
 
     public void deleteColumn(String keyspace, String column_family, String key, String column,
-            ConsistencyLevel consistency_level) throws Exception
+            ConsistencyLevel consistency_level, boolean purgeIndex) throws Exception
     {
         ColumnPath path = new ColumnPath(column_family);
         path.setColumn(ByteBufferUtil.bytes(column));
         server.remove(ByteBufferUtil.bytes(key), path, System.currentTimeMillis(), consistency_level);       
+
+        // TODO: Revisit deleting a single field because it requires a fetch first.
+        // Evidently it is impossible to remove just a field from a document in SOLR
+        // http://stackoverflow.com/questions/4802620/can-you-delete-a-field-from-a-document-in-solr-index
+        if (VirgilConfig.isIndexingEnabled() && purgeIndex){
+        	String doc = this.getSlice(keyspace, column_family, key, consistency_level);
+        	indexer.delete(column_family, key);
+        	JSONObject json = (JSONObject) JSONValue.parse(doc);
+        	json.remove(column);
+        	indexer.index(column_family, key, json);        	
+        }
     }
     
     public void deleteRow(String keyspace, String column_family, String key,
-            ConsistencyLevel consistency_level) throws Exception
+            ConsistencyLevel consistency_level, boolean purgeIndex) throws Exception
     {
         ColumnPath path = new ColumnPath(column_family);
         server.remove(ByteBufferUtil.bytes(key), path, System.currentTimeMillis(), consistency_level);
+
+        // Update Index
+        if (VirgilConfig.isIndexingEnabled() && purgeIndex){
+        	indexer.delete(column_family, key);
+        }
     }
 
     public String getColumn(String keyspace, String column_family, String key, String column,

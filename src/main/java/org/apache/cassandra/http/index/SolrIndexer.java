@@ -18,7 +18,7 @@ public class SolrIndexer implements Indexer {
 	private String solrUrl = null;
 
 	public SolrIndexer() {
-		solrUrl = VirgilConfig.getConfig().get(SOLR_CONFIG_PARAM);
+		solrUrl = VirgilConfig.getValue(SOLR_CONFIG_PARAM);
 	}
 
 	@Override
