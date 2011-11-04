@@ -34,6 +34,10 @@ public class VirgilConfig {
 		return (String) VirgilConfig.getConfig().get(key);
 	}
 	
+	public static int getListenPort(){
+		return (Integer) VirgilConfig.getConfig().get("http_listen_port");
+	}
+	
 	public static boolean isIndexingEnabled(){
 		return (Boolean)VirgilConfig.getConfig().get("enable_indexing");
 	}
