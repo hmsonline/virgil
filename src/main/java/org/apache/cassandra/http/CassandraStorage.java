@@ -123,7 +123,7 @@ public class CassandraStorage
             cc.setColumn(c);
             m.setColumn_or_supercolumn(cc);
             slice.add(m);
-        }
+        } 
         Map<ByteBuffer, Map<String, List<Mutation>>> mutationMap = new HashMap<ByteBuffer, Map<String, List<Mutation>>>();
         Map<String, List<Mutation>> cfMutations = new HashMap<String, List<Mutation>>();
         cfMutations.put(column_family, slice);
