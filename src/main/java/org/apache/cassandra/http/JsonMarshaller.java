@@ -10,7 +10,8 @@ import org.json.simple.JSONObject;
 public class JsonMarshaller
 {
 
-    public static String marshallColumn(ColumnOrSuperColumn column)
+    @SuppressWarnings("unchecked")
+	public static String marshallColumn(ColumnOrSuperColumn column)
             throws UnsupportedEncodingException
     {
         JSONObject json = new JSONObject();
@@ -19,7 +20,8 @@ public class JsonMarshaller
         return json.toString();
     }
 
-    public static String marshallSlice(List<ColumnOrSuperColumn> slice)
+    @SuppressWarnings("unchecked")
+	public static String marshallSlice(List<ColumnOrSuperColumn> slice)
             throws UnsupportedEncodingException
     {
         JSONObject json = new JSONObject();

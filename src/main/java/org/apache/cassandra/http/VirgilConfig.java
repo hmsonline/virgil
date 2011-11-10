@@ -5,13 +5,10 @@ import java.util.Map;
 
 import org.apache.cassandra.cli.CliClient;
 import org.apache.cassandra.io.util.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
 
 public class VirgilConfig {
 	private static Map<String, Object> config = null;
-    private static Logger logger = LoggerFactory.getLogger(CassandraRestService.class);
 
 	@SuppressWarnings("unchecked")
 	public static Map<String, Object> getConfig() {
