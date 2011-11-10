@@ -2,9 +2,6 @@ package org.apache.cassandra.http;
 
 import static org.junit.Assert.assertEquals;
 
-import java.net.URL;
-
-import org.apache.cassandra.config.DatabaseDescriptor;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.methods.DeleteMethod;
