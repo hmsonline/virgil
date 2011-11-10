@@ -8,6 +8,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 
+import org.apache.cassandra.http.ext.PATCH;
 import org.apache.cassandra.thrift.ConsistencyLevel;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -91,15 +92,35 @@ public class CassandraRestService
 
     //================================================================================================================
     // Row Operations
-    //================================================================================================================
-
+    //================================================================================================================ 
+    /*
+     * Add's a row, each entry in the JSON map is a column
+     */
+    @PATCH
+    @Path("/data/{keyspace}/{columnFamily}/{key}")
+    @Produces({ "application/json" })
+    public void patchRow(@PathParam("keyspace") String keyspace,
+            @PathParam("columnFamily") String columnFamily, @PathParam("key") String key,
+            @QueryParam("index") boolean index, String body) throws Exception
+    {
+        cassandraStorage.setKeyspace(keyspace);
+        JSONObject json = (JSONObject) JSONValue.parse(body);
+        
+        if (json == null)
+            throw new RuntimeException("Could not parse the JSON object [" + body + "]");
+        
+        if (logger.isDebugEnabled())
+            logger.debug("Setting column [" + keyspace + "]:[" + columnFamily + "]:[" + key + "] -> [" + json + "]");
+        cassandraStorage.setColumn(keyspace, columnFamily, key, json, ConsistencyLevel.ALL, index);
+    }
+    
     /*
      * Add's a row, each entry in the JSON map is a column
      */
     @PUT
     @Path("/data/{keyspace}/{columnFamily}/{key}")
     @Produces({ "application/json" })
-    public void addRow(@PathParam("keyspace") String keyspace,
+    public void setRow(@PathParam("keyspace") String keyspace,
             @PathParam("columnFamily") String columnFamily, @PathParam("key") String key,
             @QueryParam("index") boolean index, String body) throws Exception
     {
