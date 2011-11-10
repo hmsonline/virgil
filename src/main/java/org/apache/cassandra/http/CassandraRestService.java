@@ -112,7 +112,10 @@ public class CassandraRestService
         if (logger.isDebugEnabled())
             logger.debug("Setting column [" + keyspace + "]:[" + columnFamily + "]:[" + key + "] -> [" + json + "]");
 
-        cassandraStorage.setColumn(keyspace, columnFamily, key, json, ConsistencyLevel.ALL, index);
+        long deleteTime = this.deleteRow(keyspace, columnFamily, key, index);
+
+        
+        cassandraStorage.setColumn(keyspace, columnFamily, key, json, ConsistencyLevel.ALL, index, deleteTime + 1);
     }
 
     /*
@@ -137,7 +140,7 @@ public class CassandraRestService
     @DELETE
     @Path("/data/{keyspace}/{columnFamily}/{key}")
     @Produces({ "application/json" })
-    public void deleteRow(@PathParam("keyspace") String keyspace,
+    public long deleteRow(@PathParam("keyspace") String keyspace,
             @PathParam("columnFamily") String columnFamily, 
             @PathParam("key") String key,
             @QueryParam("purgeIndex") boolean purgeIndex) throws Exception
@@ -146,7 +149,7 @@ public class CassandraRestService
         if (logger.isDebugEnabled())
             logger.debug("Deleting row [" + keyspace + "]:[" + columnFamily + "]:[" + key + "]");
 
-        cassandraStorage.deleteRow(keyspace, columnFamily, key, ConsistencyLevel.ALL, purgeIndex);
+        return cassandraStorage.deleteRow(keyspace, columnFamily, key, ConsistencyLevel.ALL, purgeIndex);
     }
 
     

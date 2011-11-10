@@ -111,7 +111,7 @@ public class HttpTest {
 		// DELETE ROW
 		delete = new DeleteMethod(BASE_URL + KEYSPACE + "/" + COLUMN_FAMILY
 				+ "/" + KEY);
-		this.send(client, delete, 204);
+		this.send(client, delete, 200);
 
 		// VERIFY ROW DELETE
 		get = new GetMethod(BASE_URL + KEYSPACE + "/" + COLUMN_FAMILY + "/"
