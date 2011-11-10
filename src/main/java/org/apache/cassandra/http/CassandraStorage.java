@@ -108,6 +108,12 @@ public class CassandraStorage
     public void setColumn(String keyspace, String column_family, String key, JSONObject json,
             ConsistencyLevel consistency_level, boolean index) throws Exception
     {
+    	this.setColumn(keyspace, column_family, key, json, consistency_level, index, System.currentTimeMillis());
+    }
+    
+    public void setColumn(String keyspace, String column_family, String key, JSONObject json,
+            ConsistencyLevel consistency_level, boolean index, long timestamp) throws Exception
+    {
         List<Mutation> slice = new ArrayList<Mutation>();
         for (Object field : json.keySet())
         {
@@ -116,7 +122,7 @@ public class CassandraStorage
             Column c = new Column();
             c.setName(ByteBufferUtil.bytes(name));
             c.setValue(ByteBufferUtil.bytes(value));
-            c.setTimestamp(System.currentTimeMillis());
+            c.setTimestamp(timestamp);
 
             Mutation m = new Mutation();
             ColumnOrSuperColumn cc = new ColumnOrSuperColumn();
@@ -153,16 +159,18 @@ public class CassandraStorage
         }
     }
     
-    public void deleteRow(String keyspace, String column_family, String key,
+    public long deleteRow(String keyspace, String column_family, String key,
             ConsistencyLevel consistency_level, boolean purgeIndex) throws Exception
     {
+    	long deleteTime = System.currentTimeMillis();
         ColumnPath path = new ColumnPath(column_family);
-        server.remove(ByteBufferUtil.bytes(key), path, System.currentTimeMillis(), consistency_level);
+        server.remove(ByteBufferUtil.bytes(key), path, deleteTime, consistency_level);
 
         // Update Index
         if (VirgilConfig.isIndexingEnabled() && purgeIndex){
         	indexer.delete(column_family, key);
         }
+        return deleteTime;
     }
 
     public String getColumn(String keyspace, String column_family, String key, String column,
