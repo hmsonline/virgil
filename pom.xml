@@ -9,7 +9,7 @@
 	<url>http://maven.apache.org</url>
 	
 	<properties>
-		<cassandra.data.dir>${project.build.directory}</cassandra.data.dir>
+		<cassandra.data.dir>/var/lib</cassandra.data.dir>
 	</properties>
 
 	<dependencies>

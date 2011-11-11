@@ -80,7 +80,7 @@ public class HttpDaemon extends CassandraDaemon
 
     public static void main(String args[])
     {
-        String CONFIG_URL = "cassandra.yaml";
+        String CONFIG_URL = args[0];//"cassandra.yaml";
         ClassLoader loader = DatabaseDescriptor.class.getClassLoader();
         URL url = loader.getResource(CONFIG_URL);
         try {
