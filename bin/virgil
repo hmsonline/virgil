@@ -23,7 +23,7 @@ for jar in ./target/lib/*.jar; do
     CLASSPATH=$CLASSPATH:$jar
 done
 
-CLASSPATH=$CLASSPATH:src/main/resources
+#CLASSPATH=$CLASSPATH:src/main/resources
 CLASSPATH=$CLASSPATH:target/classes
 
 # Use JAVA_HOME if set, otherwise look for java in PATH
@@ -34,4 +34,4 @@ else
 fi
 
 
-$JAVA -Dcassandra.data.dir=data -cp $CLASSPATH org.apache.cassandra.http.HttpDaemon
+$JAVA -cp $CLASSPATH org.apache.cassandra.http.HttpDaemon cassandra.yaml
