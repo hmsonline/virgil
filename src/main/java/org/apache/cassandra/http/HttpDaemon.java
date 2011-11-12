@@ -80,6 +80,8 @@ public class HttpDaemon extends CassandraDaemon
 
     public static void main(String args[])
     {
+    	// TDOD need to fix this so the "cassandra.yaml" file can live in a "conf" directory of a distribution
+    	// we should not be loading from a classpath resource (i.e. the user can't easily edit the config)
         String CONFIG_URL = args[0];//"cassandra.yaml";
         ClassLoader loader = DatabaseDescriptor.class.getClassLoader();
         URL url = loader.getResource(CONFIG_URL);
