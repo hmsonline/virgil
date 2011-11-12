@@ -14,6 +14,8 @@ public class VirgilConfig {
 	public static Map<String, Object> getConfig() {
 
 		if (VirgilConfig.config == null) {
+			// TODO bad, bad, bad... again we're loading from a classpath resource, which makes it hard for users to edit configs
+			// this should go in "[INSTALL_DIR]/conf"
 			final InputStream inputStream = CliClient.class.getClassLoader()
 					.getResourceAsStream("virgil.yaml");
 			try {

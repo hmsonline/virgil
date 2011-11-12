@@ -65,6 +65,7 @@ public class ApacheCxfHttpServer implements IHttpServer
         
         ResourceHandler resourceHandler = new ResourceHandler(); 
         resourceHandler.setDirectoriesListed(true); 
+        // TODO Fix this, it won't work in a distribution.
         resourceHandler.setWelcomeFiles(new String[] {"index.html"}); 
         resourceHandler.setResourceBase("./src/main/webapp/"); 
 
