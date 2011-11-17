@@ -7,38 +7,22 @@ Ext.Ajax.defaultHeaders = {
 Ext.onReady(function() {
     Ext.define('Keyspace', {
         extend: 'Ext.data.Model',
-        fields: ['name'],
-        hasMany: {
-            model: 'ColumnFamily'
-        },
+        fields: ['keyspace', 'columnFamily'],
         proxy: {
             type: 'rest',
-            url: '/keyspaces/'
+            url: '/keyspaces'
         }
-    });
-
-    Ext.define('ColumnFamily', {
-        extend: 'Ext.data.Model',
-        fields: ['name'],
-        belongsTo: 'Keyspace'
     });
 
     var keyspaces = Ext.create('Ext.data.Store', {
         model: 'Keyspace',
-        autoLoad: true
+        autoLoad: true,
+        sorters: ['keyspace','columnFamily'],
+        groupField: 'keyspace',
     });
 
-    var grid = Ext.create('Ext.grid.Panel', {
-        collapsible: true,
-        iconCls: 'icon-grid',
-        frame: true,
-        store: keyspaces,
-        title: 'keyspaces',
-        columns: [{
-            text: 'Name',
-            flex: 1,
-            dataIndex: 'name'
-        }]
+    var groupingFeature = Ext.create('Ext.grid.feature.Grouping', {
+        groupHeaderTpl: '{name} ({rows.length})'
     });
 
     Ext.create('Ext.Viewport', {
@@ -66,10 +50,11 @@ Ext.onReady(function() {
             id: 'west-region-container',
             layout: 'fit',
             store: keyspaces,
+            features: [groupingFeature],
             columns: [{
-                text: 'Name',
+                text: 'ColumnFamily',
                 flex: 1,
-                dataIndex: 'name'
+                dataIndex: 'columnFamily'
             }]
         },
         {
