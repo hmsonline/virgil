@@ -30,7 +30,7 @@ Ext.onReady(function() {
         layout: 'border',
         fullscreen: true,
         items: [{
-            title: 'South Region is resizable',
+            title: 'CQL... Coming soon.',
             region: 'south',
             // position for region
             xtype: 'panel',
@@ -58,7 +58,7 @@ Ext.onReady(function() {
             }]
         },
         {
-            title: 'Center Region',
+            title: 'Data',
             region: 'center',
             // center region is required, no width/height specified
             xtype: 'panel',
