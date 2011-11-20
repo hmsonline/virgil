@@ -25,16 +25,16 @@ REM Ensure that any user defined CLASSPATH variables are not used on startup
 set CLASSPATH=
 
 REM For each jar in the CASSANDRA_HOME lib directory call append to build the CLASSPATH variable.
-for %%i in ("%CASSANDRA_HOME%\lib\*.jar") do call :append "%%i"
+for %%i in ("target\lib\*.jar") do call :append "%%i"
 goto okClasspath
 
 :append
-set CLASSPATH=%CLASSPATH%;%1
+set CLASSPATH=%CLASSPATH%;%1;
 goto :eof
 
 :okClasspath
 REM Include the build\classes\main directory so it works in development
-set CASSANDRA_CLASSPATH=%CLASSPATH%;"%CASSANDRA_HOME%\build\classes\main";"%CASSANDRA_HOME%\build\classes\thrift"
+set CASSANDRA_CLASSPATH=%CLASSPATH%;"target\classes";"src\main\resources"
 goto runCli
 
 :runCli
