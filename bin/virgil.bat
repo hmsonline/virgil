@@ -24,12 +24,11 @@ pushd %~dp0..
 if NOT DEFINED CASSANDRA_HOME set CASSANDRA_HOME=%CD%
 popd
 
-if NOT DEFINED CASSANDRA_MAIN set CASSANDRA_MAIN=org.apache.cassandra.thrift.CassandraDaemon
+if NOT DEFINED CASSANDRA_MAIN set CASSANDRA_MAIN=org.apache.cassandra.http.HttpDaemon
 if NOT DEFINED JAVA_HOME goto err
 
 REM ***** JAVA options *****
 set JAVA_OPTS=-ea^
- -javaagent:"%CASSANDRA_HOME%\lib\jamm-0.2.5.jar"^
  -Xms1G^
  -Xmx1G^
  -XX:+HeapDumpOnOutOfMemoryError^
@@ -43,16 +42,15 @@ set JAVA_OPTS=-ea^
  -Dcom.sun.management.jmxremote.port=7199^
  -Dcom.sun.management.jmxremote.ssl=false^
  -Dcom.sun.management.jmxremote.authenticate=false^
- -Dlog4j.configuration=log4j-server.properties^
+ -Dlog4j.configuration=src/main/resources/log4j.xml^
  -Dlog4j.defaultInitOverride=true
 
 REM ***** CLASSPATH library setting *****
 
 REM Ensure that any user defined CLASSPATH variables are not used on startup
-set CLASSPATH="%CASSANDRA_HOME%\conf"
+set CLASSPATH="%CASSANDRA_HOME%\target\classes";"%CASSANDRA_HOME%\src\main\resources";"%CASSANDRA_HOME%\conf"
 
-REM For each jar in the CASSANDRA_HOME lib directory call append to build the CLASSPATH variable.
-for %%i in ("%CASSANDRA_HOME%\lib\*.jar") do call :append "%%i"
+for %%i in ("target\lib\*.jar") do call :append "%%i"
 goto okClasspath
 
 :append
@@ -60,17 +58,16 @@ set CLASSPATH=%CLASSPATH%;%1
 goto :eof
 
 :okClasspath
-REM Include the build\classes\main directory so it works in development
-set CASSANDRA_CLASSPATH=%CLASSPATH%;"%CASSANDRA_HOME%\build\classes\main";"%CASSANDRA_HOME%\build\classes\thrift"
+set CASSANDRA_CLASSPATH=%CLASSPATH%;
 set CASSANDRA_PARAMS=-Dcassandra -Dcassandra-foreground=yes
 if /i "%ARG%" == "INSTALL" goto doInstallOperation
 if /i "%ARG%" == "UNINSTALL" goto doInstallOperation
 goto runDaemon
 
-
 :runDaemon
-echo Starting Cassandra Server
-"%JAVA_HOME%\bin\java" %JAVA_OPTS% %CASSANDRA_PARAMS% -cp %CASSANDRA_CLASSPATH% "%CASSANDRA_MAIN%"
+echo Starting Virgil Server
+echo "%JAVA_HOME%\bin\java" %JAVA_OPTS% %CASSANDRA_PARAMS% -cp %CASSANDRA_CLASSPATH% "%CASSANDRA_MAIN%"
+"%JAVA_HOME%\bin\java" %JAVA_OPTS% %CASSANDRA_PARAMS% -cp %CASSANDRA_CLASSPATH% "%CASSANDRA_MAIN%" cassandra.yaml
 goto finally
 
 :doInstallOperation
