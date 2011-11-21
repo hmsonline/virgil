@@ -5,6 +5,53 @@ Ext.Ajax.defaultHeaders = {
 };
 
 Ext.onReady(function() {
+
+	// ================================================================================
+	// Column Family
+	// ================================================================================
+    Ext.define('ColumnFamily', {
+        extend: 'Ext.data.Model',
+        fields: ['row', 'column', 'value'],
+        proxy: {
+            type: 'ajax',
+            url: '/keyspaces/datastore/pets/'
+        }
+    });
+
+    var columnFamily = Ext.create('Ext.data.Store', {
+        model: 'ColumnFamily',
+        autoLoad: true,
+        sorters: ['row', 'column'],
+        groupField: 'row',
+    });
+
+    var rowGroupingFeature = Ext.create('Ext.grid.feature.Grouping', {
+        groupHeaderTpl: '{name} ({rows.length})'
+    });
+
+    var columnFamilyGrid = Ext.create('Ext.grid.Panel', {
+        title: 'Column Family',
+        region: 'center',
+        xtype: 'gridpanel',
+        margins: '5 5 0 0',
+        collapsible: true,
+        // make collapsible
+        layout: 'fit',
+        store: columnFamily,
+        sm: Ext.create('Ext.selection.RowModel').setSelectionMode('SINGLE'),
+        features: [rowGroupingFeature],
+        columns: [{
+            text: 'Column',
+            flex: 1,
+            dataIndex: 'column'
+        },
+        {
+            text: 'Value',
+			flex: 1,
+            dataIndex: 'value'
+        }]
+    });
+
 	
 	// ================================================================================
 	// Keyspace
@@ -49,59 +96,14 @@ Ext.onReady(function() {
         }],
         listeners: {
             itemclick: function(vie, record) {
-				alert(record.raw["columnFamily"]);
-                console.info(record.raw["columnFamily"]);
-                console.info(record.raw["keyspace"]);
+				cfUrl = "keyspaces/" + record.raw["keyspace"] + "/" + record.raw["columnFamily"] + "/"
+                console.info("Fetching [" + cfUrl + "]");
+				ColumnFamily.proxy.url = cfUrl;
+				columnFamily.load();
+				
             }
         }
     });
-
-	// ================================================================================
-	// Column Family
-	// ================================================================================
-    Ext.define('ColumnFamily', {
-        extend: 'Ext.data.Model',
-        fields: ['row', 'column', 'value'],
-        proxy: {
-            type: 'rest',
-            url: '/keyspaces/datastore/pets/'
-        }
-    });
-
-    var columnFamily = Ext.create('Ext.data.Store', {
-        model: 'ColumnFamily',
-        autoLoad: true,
-        sorters: ['row', 'column'],
-        groupField: 'row',
-    });
-
-    var rowGroupingFeature = Ext.create('Ext.grid.feature.Grouping', {
-        groupHeaderTpl: '{name} ({rows.length})'
-    });
-
-    var columnFamilyGrid = Ext.create('Ext.grid.Panel', {
-        title: 'Column Family',
-        region: 'center',
-        xtype: 'gridpanel',
-        margins: '5 5 0 0',
-        collapsible: true,
-        // make collapsible
-        layout: 'fit',
-        store: columnFamily,
-        sm: Ext.create('Ext.selection.RowModel').setSelectionMode('SINGLE'),
-        features: [rowGroupingFeature],
-        columns: [{
-            text: 'Column',
-            flex: 1,
-            dataIndex: 'column'
-        },
-        {
-            text: 'Value',
-			flex: 1,
-            dataIndex: 'value'
-        }]
-    });
-
 
 	// ================================================================================
 	// Main Viewport
