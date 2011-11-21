@@ -33,6 +33,20 @@ public class CassandraRestService
     /*
      * Creates a key space
      */
+    @GET
+    @Path("/data/")
+    @Produces({ "application/json" })
+    public String getKeyspaces(@PathParam("keyspace") String keyspace) throws Exception
+    {
+        if (logger.isDebugEnabled())
+            logger.debug("Listing keyspaces.");
+        return cassandraStorage.getKeyspaces();
+    }
+
+    
+    /*
+     * Creates a key space
+     */
     @PUT
     @Path("/data/{keyspace}")
     @Produces({ "application/json" })
