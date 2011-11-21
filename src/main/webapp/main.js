@@ -61,7 +61,7 @@ Ext.onReady(function() {
         fields: ['keyspace', 'columnFamily'],
         proxy: {
             type: 'rest',
-            url: '/keyspaces'
+            url: '/virgil/data/'
         }
     });
 
@@ -100,7 +100,6 @@ Ext.onReady(function() {
                 console.info("Fetching [" + cfUrl + "]");
 				ColumnFamily.proxy.url = cfUrl;
 				columnFamily.load();
-				
             }
         }
     });
