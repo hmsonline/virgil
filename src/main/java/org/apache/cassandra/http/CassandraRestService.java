@@ -60,12 +60,12 @@ public class CassandraRestService {
 	@GET
 	@Path("/data/{keyspace}/{columnFamily}")
 	@Produces({ "application/json" })
-	public void getColumnFamily(@PathParam("keyspace") String keyspace,
+	public String getColumnFamily(@PathParam("keyspace") String keyspace,
 			@PathParam("columnFamily") String columnFamily) throws Exception {
 		if (logger.isDebugEnabled())
 			logger.debug("Creating column family [" + keyspace + "]:[" + columnFamily + "]");
 		cassandraStorage.setKeyspace(keyspace);
-		cassandraStorage.getRows(columnFamily, ConsistencyLevel.ALL);
+		return cassandraStorage.getRows(columnFamily, ConsistencyLevel.ALL);
 	}
 
 	@PUT
