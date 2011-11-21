@@ -16,234 +16,201 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Path("/virgil/")
-public class CassandraRestService
-{
-    private static Logger logger = LoggerFactory.getLogger(CassandraRestService.class);
-    private CassandraStorage cassandraStorage = null;
+public class CassandraRestService {
+	private static Logger logger = LoggerFactory.getLogger(CassandraRestService.class);
+	private CassandraStorage cassandraStorage = null;
 
-    public CassandraRestService(CassandraStorage cassandraStorage)
-    {
-        this.cassandraStorage = cassandraStorage;
-    }
+	public CassandraRestService(CassandraStorage cassandraStorage) {
+		this.cassandraStorage = cassandraStorage;
+	}
 
-    //================================================================================================================
-    // Key Space Operations
-    //================================================================================================================
+	// ================================================================================================================
+	// Key Space Operations
+	// ================================================================================================================
+	@GET
+	@Path("/data/")
+	@Produces({ "application/json" })
+	public String getKeyspaces(@PathParam("keyspace") String keyspace) throws Exception {
+		if (logger.isDebugEnabled())
+			logger.debug("Listing keyspaces.");
+		return cassandraStorage.getKeyspaces();
+	}
 
-    /*
-     * Creates a key space
-     */
-    @GET
-    @Path("/data/")
-    @Produces({ "application/json" })
-    public String getKeyspaces(@PathParam("keyspace") String keyspace) throws Exception
-    {
-        if (logger.isDebugEnabled())
-            logger.debug("Listing keyspaces.");
-        return cassandraStorage.getKeyspaces();
-    }
+	@PUT
+	@Path("/data/{keyspace}")
+	@Produces({ "application/json" })
+	public void createKeyspace(@PathParam("keyspace") String keyspace) throws Exception {
+		if (logger.isDebugEnabled())
+			logger.debug("Creating keyspace [" + keyspace + "]");
+		cassandraStorage.addKeyspace(keyspace);
+	}
 
-    
-    /*
-     * Creates a key space
-     */
-    @PUT
-    @Path("/data/{keyspace}")
-    @Produces({ "application/json" })
-    public void createKeyspace(@PathParam("keyspace") String keyspace) throws Exception
-    {
-        if (logger.isDebugEnabled())
-            logger.debug("Creating keyspace [" + keyspace + "]");
-        cassandraStorage.addKeyspace(keyspace);
-    }
+	@DELETE
+	@Path("/data/{keyspace}")
+	@Produces({ "application/json" })
+	public void dropKeyspace(@PathParam("keyspace") String keyspace) throws Exception {
+		if (logger.isDebugEnabled())
+			logger.debug("Dropping keyspace [" + keyspace + "]");
+		cassandraStorage.dropKeyspace(keyspace);
+	}
 
-    /*
-     * Drops a key space
-     */
-    @DELETE
-    @Path("/data/{keyspace}")
-    @Produces({ "application/json" })
-    public void dropKeyspace(@PathParam("keyspace") String keyspace) throws Exception
-    {
-        if (logger.isDebugEnabled())
-            logger.debug("Dropping keyspace [" + keyspace + "]");
-        cassandraStorage.dropKeyspace(keyspace);
-    }
+	// ================================================================================================================
+	// Column Family Operations
+	// ================================================================================================================
+	@GET
+	@Path("/data/{keyspace}/{columnFamily}")
+	@Produces({ "application/json" })
+	public void getColumnFamily(@PathParam("keyspace") String keyspace,
+			@PathParam("columnFamily") String columnFamily) throws Exception {
+		if (logger.isDebugEnabled())
+			logger.debug("Creating column family [" + keyspace + "]:[" + columnFamily + "]");
+		cassandraStorage.setKeyspace(keyspace);
+		cassandraStorage.getRows(columnFamily, ConsistencyLevel.ALL);
+	}
 
-    //================================================================================================================
-    // Column Family Operations
-    //================================================================================================================
+	@PUT
+	@Path("/data/{keyspace}/{columnFamily}")
+	@Produces({ "application/json" })
+	public void createColumnFamily(@PathParam("keyspace") String keyspace,
+			@PathParam("columnFamily") String columnFamily) throws Exception {
+		if (logger.isDebugEnabled())
+			logger.debug("Creating column family [" + keyspace + "]:[" + columnFamily + "]");
+		cassandraStorage.setKeyspace(keyspace);
+		cassandraStorage.createColumnFamily(keyspace, columnFamily);
+	}
 
-    /*
-     * Creates a new column family.
-     */
-    @PUT
-    @Path("/data/{keyspace}/{columnFamily}")
-    @Produces({ "application/json" })
-    public void createColumnFamily(@PathParam("keyspace") String keyspace,
-            @PathParam("columnFamily") String columnFamily) throws Exception
-    {
-        if (logger.isDebugEnabled())
-            logger.debug("Creating column family [" + keyspace + "]:[" + columnFamily + "]");
-        cassandraStorage.setKeyspace(keyspace);
-        cassandraStorage.createColumnFamily(keyspace, columnFamily);
-    }
-    
-    /*
-     * Deletes a column family.
-     */
-    @DELETE
-    @Path("/data/{keyspace}/{columnFamily}")
-    @Produces({ "application/json" })
-    public void deleteColumnFamily(@PathParam("keyspace") String keyspace,
-            @PathParam("columnFamily") String columnFamily) throws Exception
-    {
-        if (logger.isDebugEnabled())
-            logger.debug("Deleteing column family [" + keyspace + "]:[" + columnFamily + "]");
-        cassandraStorage.setKeyspace(keyspace);
-        cassandraStorage.dropColumnFamily(columnFamily);
-    }
+	
+	@DELETE
+	@Path("/data/{keyspace}/{columnFamily}")
+	@Produces({ "application/json" })
+	public void deleteColumnFamily(@PathParam("keyspace") String keyspace,
+			@PathParam("columnFamily") String columnFamily) throws Exception {
+		if (logger.isDebugEnabled())
+			logger.debug("Deleteing column family [" + keyspace + "]:[" + columnFamily + "]");
+		cassandraStorage.setKeyspace(keyspace);
+		cassandraStorage.dropColumnFamily(columnFamily);
+	}
 
-    //================================================================================================================
-    // Row Operations
-    //================================================================================================================ 
-    /*
-     * Add's a row, each entry in the JSON map is a column
-     */
-    @PATCH
-    @Path("/data/{keyspace}/{columnFamily}/{key}")
-    @Produces({ "application/json" })
-    public void patchRow(@PathParam("keyspace") String keyspace,
-            @PathParam("columnFamily") String columnFamily, @PathParam("key") String key,
-            @QueryParam("index") boolean index, String body) throws Exception
-    {
-        cassandraStorage.setKeyspace(keyspace);
-        JSONObject json = (JSONObject) JSONValue.parse(body);
-        
-        if (json == null)
-            throw new RuntimeException("Could not parse the JSON object [" + body + "]");
-        
-        if (logger.isDebugEnabled())
-            logger.debug("Setting column [" + keyspace + "]:[" + columnFamily + "]:[" + key + "] -> [" + json + "]");
-        cassandraStorage.setColumn(keyspace, columnFamily, key, json, ConsistencyLevel.ALL, index);
-    }
-    
-    /*
-     * Add's a row, each entry in the JSON map is a column
-     */
-    @PUT
-    @Path("/data/{keyspace}/{columnFamily}/{key}")
-    @Produces({ "application/json" })
-    public void setRow(@PathParam("keyspace") String keyspace,
-            @PathParam("columnFamily") String columnFamily, @PathParam("key") String key,
-            @QueryParam("index") boolean index, String body) throws Exception
-    {
-        cassandraStorage.setKeyspace(keyspace);
-        JSONObject json = (JSONObject) JSONValue.parse(body);
-        
-        if (json == null)
-            throw new RuntimeException("Could not parse the JSON object [" + body + "]");
-        
-        if (logger.isDebugEnabled())
-            logger.debug("Setting column [" + keyspace + "]:[" + columnFamily + "]:[" + key + "] -> [" + json + "]");
+	// ================================================================================================================
+	// Row Operations
+	// ================================================================================================================
+	/*
+	 * Add's a row, each entry in the JSON map is a column
+	 */
+	@PATCH
+	@Path("/data/{keyspace}/{columnFamily}/{key}")
+	@Produces({ "application/json" })
+	public void patchRow(@PathParam("keyspace") String keyspace, @PathParam("columnFamily") String columnFamily,
+			@PathParam("key") String key, @QueryParam("index") boolean index, String body) throws Exception {
+		cassandraStorage.setKeyspace(keyspace);
+		JSONObject json = (JSONObject) JSONValue.parse(body);
 
-        long deleteTime = this.deleteRow(keyspace, columnFamily, key, index);
+		if (json == null)
+			throw new RuntimeException("Could not parse the JSON object [" + body + "]");
 
-        
-        cassandraStorage.setColumn(keyspace, columnFamily, key, json, ConsistencyLevel.ALL, index, deleteTime + 1);
-    }
+		if (logger.isDebugEnabled())
+			logger.debug("Setting column [" + keyspace + "]:[" + columnFamily + "]:[" + key + "] -> [" + json + "]");
+		cassandraStorage.setColumn(keyspace, columnFamily, key, json, ConsistencyLevel.ALL, index);
+	}
 
-    /*
-     * Fetches a row
-     */
-    @GET
-    @Path("/data/{keyspace}/{columnFamily}/{key}")
-    @Produces({ "application/json" })
-    public String getRow(@PathParam("keyspace") String keyspace,
-            @PathParam("columnFamily") String columnFamily, @PathParam("key") String key) throws Exception
-    {
-        cassandraStorage.setKeyspace(keyspace);
-        if (logger.isDebugEnabled())
-            logger.debug("Getting row [" + keyspace + "]:[" + columnFamily + "]:[" + key + "]");
+	/*
+	 * Add's a row, each entry in the JSON map is a column
+	 */
+	@PUT
+	@Path("/data/{keyspace}/{columnFamily}/{key}")
+	@Produces({ "application/json" })
+	public void setRow(@PathParam("keyspace") String keyspace, @PathParam("columnFamily") String columnFamily,
+			@PathParam("key") String key, @QueryParam("index") boolean index, String body) throws Exception {
+		cassandraStorage.setKeyspace(keyspace);
+		JSONObject json = (JSONObject) JSONValue.parse(body);
 
-        return cassandraStorage.getSlice(keyspace, columnFamily, key, ConsistencyLevel.ALL);
-    }
+		if (json == null)
+			throw new RuntimeException("Could not parse the JSON object [" + body + "]");
 
-    /*
-     * Deletes a row
-     */
-    @DELETE
-    @Path("/data/{keyspace}/{columnFamily}/{key}")
-    @Produces({ "application/json" })
-    public long deleteRow(@PathParam("keyspace") String keyspace,
-            @PathParam("columnFamily") String columnFamily, 
-            @PathParam("key") String key,
-            @QueryParam("purgeIndex") boolean purgeIndex) throws Exception
-    {
-        cassandraStorage.setKeyspace(keyspace);
-        if (logger.isDebugEnabled())
-            logger.debug("Deleting row [" + keyspace + "]:[" + columnFamily + "]:[" + key + "]");
+		if (logger.isDebugEnabled())
+			logger.debug("Setting column [" + keyspace + "]:[" + columnFamily + "]:[" + key + "] -> [" + json + "]");
 
-        return cassandraStorage.deleteRow(keyspace, columnFamily, key, ConsistencyLevel.ALL, purgeIndex);
-    }
+		long deleteTime = this.deleteRow(keyspace, columnFamily, key, index);
 
-    
-    //================================================================================================================
-    // Column Operations
-    //================================================================================================================
+		cassandraStorage.setColumn(keyspace, columnFamily, key, json, ConsistencyLevel.ALL, index, deleteTime + 1);
+	}
 
-    /*
-     * Fetches a column
-     */
-    @GET
-    @Path("/data/{keyspace}/{columnFamily}/{key}/{columnName}")
-    @Produces({ "application/json" })
-    public String getColumn(@PathParam("keyspace") String keyspace,
-            @PathParam("columnFamily") String columnFamily,
-            @PathParam("key") String key,
-            @PathParam("columnName") String columnName) throws Exception
-    {
-        cassandraStorage.setKeyspace(keyspace);
-        if (logger.isDebugEnabled())
-            logger.debug("Getting column [" + keyspace + "]:[" + columnFamily + "]:[" + key + "]:[" + columnName + "]");
+	/*
+	 * Fetches a row
+	 */
+	@GET
+	@Path("/data/{keyspace}/{columnFamily}/{key}")
+	@Produces({ "application/json" })
+	public String getRow(@PathParam("keyspace") String keyspace, @PathParam("columnFamily") String columnFamily,
+			@PathParam("key") String key) throws Exception {
+		cassandraStorage.setKeyspace(keyspace);
+		if (logger.isDebugEnabled())
+			logger.debug("Getting row [" + keyspace + "]:[" + columnFamily + "]:[" + key + "]");
 
-        return cassandraStorage.getColumn(keyspace, columnFamily, key, columnName, ConsistencyLevel.ALL);
-    }
+		return cassandraStorage.getSlice(keyspace, columnFamily, key, ConsistencyLevel.ALL);
+	}
 
-    /*
-     * Adds a column
-     */
-    @PUT
-    @Path("/data/{keyspace}/{columnFamily}/{key}/{columnName}")
-    @Produces({ "application/json" })
-    public void addColumn(@PathParam("keyspace") String keyspace,
-            @PathParam("columnFamily") String columnFamily,
-            @PathParam("key") String key,
-            @PathParam("columnName") String columnName,
-            @QueryParam("index") boolean index,
-            String body) throws Exception
-    {
-        cassandraStorage.setKeyspace(keyspace);
-        if (logger.isDebugEnabled())
-            logger.debug("Deleting row [" + keyspace + "]:[" + columnFamily + "]:[" + key + "] => [" + body + "]");
-        cassandraStorage.addColumn(keyspace, columnFamily, key, columnName, body, ConsistencyLevel.ALL, index);
-    }
-    
-    /*
-     * Deletes a column
-     */
-    @DELETE
-    @Path("/data/{keyspace}/{columnFamily}/{key}/{columnName}")
-    @Produces({ "application/json" })
-    public void deleteColumn(@PathParam("keyspace") String keyspace,
-            @PathParam("columnFamily") String columnFamily,
-            @PathParam("key") String key,
-            @PathParam("columnName") String columnName,
-            @QueryParam("purgeIndex") boolean purgeIndex) throws Exception
-    {
-        cassandraStorage.setKeyspace(keyspace);
-        if (logger.isDebugEnabled())
-            logger.debug("Deleting row [" + keyspace + "]:[" + columnFamily + "]:[" + key + "]");
-        cassandraStorage.deleteColumn(keyspace, columnFamily, key, columnName, ConsistencyLevel.ALL, purgeIndex);
-    }
+	/*
+	 * Deletes a row
+	 */
+	@DELETE
+	@Path("/data/{keyspace}/{columnFamily}/{key}")
+	@Produces({ "application/json" })
+	public long deleteRow(@PathParam("keyspace") String keyspace, @PathParam("columnFamily") String columnFamily,
+			@PathParam("key") String key, @QueryParam("purgeIndex") boolean purgeIndex) throws Exception {
+		cassandraStorage.setKeyspace(keyspace);
+		if (logger.isDebugEnabled())
+			logger.debug("Deleting row [" + keyspace + "]:[" + columnFamily + "]:[" + key + "]");
+
+		return cassandraStorage.deleteRow(keyspace, columnFamily, key, ConsistencyLevel.ALL, purgeIndex);
+	}
+
+	// ================================================================================================================
+	// Column Operations
+	// ================================================================================================================
+
+	/*
+	 * Fetches a column
+	 */
+	@GET
+	@Path("/data/{keyspace}/{columnFamily}/{key}/{columnName}")
+	@Produces({ "application/json" })
+	public String getColumn(@PathParam("keyspace") String keyspace, @PathParam("columnFamily") String columnFamily,
+			@PathParam("key") String key, @PathParam("columnName") String columnName) throws Exception {
+		cassandraStorage.setKeyspace(keyspace);
+		if (logger.isDebugEnabled())
+			logger.debug("Getting column [" + keyspace + "]:[" + columnFamily + "]:[" + key + "]:[" + columnName + "]");
+
+		return cassandraStorage.getColumn(keyspace, columnFamily, key, columnName, ConsistencyLevel.ALL);
+	}
+
+	/*
+	 * Adds a column
+	 */
+	@PUT
+	@Path("/data/{keyspace}/{columnFamily}/{key}/{columnName}")
+	@Produces({ "application/json" })
+	public void addColumn(@PathParam("keyspace") String keyspace, @PathParam("columnFamily") String columnFamily,
+			@PathParam("key") String key, @PathParam("columnName") String columnName,
+			@QueryParam("index") boolean index, String body) throws Exception {
+		cassandraStorage.setKeyspace(keyspace);
+		if (logger.isDebugEnabled())
+			logger.debug("Deleting row [" + keyspace + "]:[" + columnFamily + "]:[" + key + "] => [" + body + "]");
+		cassandraStorage.addColumn(keyspace, columnFamily, key, columnName, body, ConsistencyLevel.ALL, index);
+	}
+
+	/*
+	 * Deletes a column
+	 */
+	@DELETE
+	@Path("/data/{keyspace}/{columnFamily}/{key}/{columnName}")
+	@Produces({ "application/json" })
+	public void deleteColumn(@PathParam("keyspace") String keyspace, @PathParam("columnFamily") String columnFamily,
+			@PathParam("key") String key, @PathParam("columnName") String columnName,
+			@QueryParam("purgeIndex") boolean purgeIndex) throws Exception {
+		cassandraStorage.setKeyspace(keyspace);
+		if (logger.isDebugEnabled())
+			logger.debug("Deleting row [" + keyspace + "]:[" + columnFamily + "]:[" + key + "]");
+		cassandraStorage.deleteColumn(keyspace, columnFamily, key, columnName, ConsistencyLevel.ALL, purgeIndex);
+	}
 }
