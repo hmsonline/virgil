@@ -96,7 +96,7 @@ Ext.onReady(function() {
         }],
         listeners: {
             itemclick: function(vie, record) {
-				cfUrl = "keyspaces/" + record.raw["keyspace"] + "/" + record.raw["columnFamily"] + "/"
+				cfUrl = "/virgil/data/" + record.raw["keyspace"] + "/" + record.raw["columnFamily"] + "/"
                 console.info("Fetching [" + cfUrl + "]");
 				ColumnFamily.proxy.url = cfUrl;
 				columnFamily.load();
