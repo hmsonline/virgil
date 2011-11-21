@@ -32,6 +32,8 @@ import org.apache.cassandra.thrift.ColumnOrSuperColumn;
 import org.apache.cassandra.thrift.ColumnParent;
 import org.apache.cassandra.thrift.ColumnPath;
 import org.apache.cassandra.thrift.ConsistencyLevel;
+import org.apache.cassandra.thrift.KeyRange;
+import org.apache.cassandra.thrift.KeySlice;
 import org.apache.cassandra.thrift.KsDef;
 import org.apache.cassandra.thrift.Mutation;
 import org.apache.cassandra.thrift.SlicePredicate;
@@ -42,6 +44,7 @@ import org.json.simple.JSONValue;
 
 public class CassandraStorage {
 	private static final int MAX_COLUMNS = 1000;
+	private static final int MAX_ROWS = 20;
 	static public CassandraServer server = new CassandraServer();
 	private Indexer indexer = null;
 
@@ -170,24 +173,35 @@ public class CassandraStorage {
 		return deleteTime;
 	}
 
-	public String getColumn(String keyspace, String column_family, String key, String column,
-			ConsistencyLevel consistency_level) throws Exception {
-		ColumnPath path = new ColumnPath(column_family);
+	public String getColumn(String keyspace, String columnFamily, String key, String column,
+			ConsistencyLevel consistencyLevel) throws Exception {
+		ColumnPath path = new ColumnPath(columnFamily);
 		path.setColumn(ByteBufferUtil.bytes(column));
-		ColumnOrSuperColumn column_result = server.get(ByteBufferUtil.bytes(key), path, consistency_level);
+		ColumnOrSuperColumn column_result = server.get(ByteBufferUtil.bytes(key), path, consistencyLevel);
 		return JsonMarshaller.marshallColumn(column_result);
 	}
 
-	public String getSlice(String keyspace, String column_family, String key, ConsistencyLevel consistency_level)
+	public String getRows(String columnFamily, ConsistencyLevel consistencyLevel) throws Exception {
+		SlicePredicate predicate = new SlicePredicate();
+		SliceRange range = new SliceRange(ByteBufferUtil.bytes(""), ByteBufferUtil.bytes(""), false, MAX_COLUMNS);
+		predicate.setSlice_range(range);
+
+		KeyRange keyRange = new KeyRange(MAX_ROWS);
+		keyRange.setStart_key(ByteBufferUtil.bytes(""));
+		keyRange.setEnd_key(ByteBufferUtil.EMPTY_BYTE_BUFFER);
+		ColumnParent parent = new ColumnParent(columnFamily);
+		List<KeySlice> rows = server.get_range_slices(parent, predicate, keyRange, consistencyLevel);
+		return JsonMarshaller.marshallRows(rows, true);
+	}
+	
+	public String getSlice(String keyspace, String columnFamily, String key, ConsistencyLevel consistencyLevel)
 			throws Exception {
 		SlicePredicate predicate = new SlicePredicate();
 		SliceRange range = new SliceRange(ByteBufferUtil.bytes(""), ByteBufferUtil.bytes(""), false, MAX_COLUMNS);
 		predicate.setSlice_range(range);
-		ColumnParent parent = new ColumnParent(column_family);
+		ColumnParent parent = new ColumnParent(columnFamily);
 		List<ColumnOrSuperColumn> slice = server.get_slice(ByteBufferUtil.bytes(key), parent, predicate,
-				consistency_level);
-		System.out.println("Got [" + slice.size() + "] columns");
-
+				consistencyLevel);
 		if (slice.size() > 0)
 			return JsonMarshaller.marshallSlice(slice);
 		else

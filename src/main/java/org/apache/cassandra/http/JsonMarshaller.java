@@ -6,7 +6,9 @@ import java.util.List;
 import org.apache.cassandra.thrift.CfDef;
 import org.apache.cassandra.thrift.Column;
 import org.apache.cassandra.thrift.ColumnOrSuperColumn;
+import org.apache.cassandra.thrift.KeySlice;
 import org.apache.cassandra.thrift.KsDef;
+import org.apache.cassandra.utils.ByteBufferUtil;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -31,7 +33,26 @@ public class JsonMarshaller {
 	}
 
 	@SuppressWarnings("unchecked")
-	// TODO: Make this hierarchical, then flatten when necessary
+	public static String marshallRows(List<KeySlice> rows, boolean flatten) throws Exception {
+		if (flatten){
+			JSONArray cfJson = new JSONArray();
+			for (KeySlice row : rows){
+				String rowKey = ByteBufferUtil.string(row.key);
+				for (ColumnOrSuperColumn column : row.columns){
+					JSONObject rowJson = new JSONObject();
+					rowJson.put("row", rowKey);
+					rowJson.put("column", ByteBufferUtil.string(column.column.name));
+					rowJson.put("value", ByteBufferUtil.string(column.column.value));
+					cfJson.add(rowJson);
+				}
+			}
+			return cfJson.toString();
+		} else {
+			throw new RuntimeException("Virgil does not support hiearchical fetch of column family yet.");
+		}		
+	}
+	
+	@SuppressWarnings("unchecked")
 	public static String marshallKeyspaces(List<KsDef> keyspaces, boolean flatten) throws UnsupportedEncodingException {
 		JSONArray keyspaceJson = new JSONArray();
 		if (flatten) {
@@ -63,6 +84,8 @@ public class JsonMarshaller {
 		return keyspaceJson.toString();
 	}
 
+	
+	
 	private static String string(byte[] bytes) throws UnsupportedEncodingException {
 		return new String(bytes, "UTF8");
 	}
