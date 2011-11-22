@@ -28,6 +28,20 @@ public class CassandraRestService {
 	// Key Space Operations
 	// ================================================================================================================
 	@GET
+	@Path("/ping")
+	@Produces({ "text/plain" })
+	public String healthCheck() throws Exception {
+		if (logger.isDebugEnabled())
+			logger.debug("Ping.");
+		cassandraStorage.setKeyspace("system");
+		cassandraStorage.getSlice("system", "Versions", "build", ConsistencyLevel.ONE);
+		return "OK";
+	}
+	
+	// ================================================================================================================
+	// Key Space Operations
+	// ================================================================================================================
+	@GET
 	@Path("/data/")
 	@Produces({ "application/json" })
 	public String getKeyspaces(@PathParam("keyspace") String keyspace) throws Exception {
