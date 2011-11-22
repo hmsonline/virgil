@@ -2,6 +2,7 @@ package org.apache.cassandra.http;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -19,6 +20,7 @@ import org.slf4j.LoggerFactory;
 public class CassandraRestService {
 	private static Logger logger = LoggerFactory.getLogger(CassandraRestService.class);
 	private CassandraStorage cassandraStorage = null;
+	public static final String CONSISTENCY_LEVEL_HEADER = "X-Consistency-Level";
 
 	public CassandraRestService(CassandraStorage cassandraStorage) {
 		this.cassandraStorage = cassandraStorage;
@@ -35,9 +37,9 @@ public class CassandraRestService {
 			logger.debug("Ping.");
 		cassandraStorage.setKeyspace("system");
 		cassandraStorage.getSlice("system", "Versions", "build", ConsistencyLevel.ONE);
-		return "OK";
+		return "OK\n";
 	}
-	
+
 	// ================================================================================================================
 	// Key Space Operations
 	// ================================================================================================================
@@ -75,11 +77,12 @@ public class CassandraRestService {
 	@Path("/data/{keyspace}/{columnFamily}")
 	@Produces({ "application/json" })
 	public String getColumnFamily(@PathParam("keyspace") String keyspace,
-			@PathParam("columnFamily") String columnFamily) throws Exception {
+			@PathParam("columnFamily") String columnFamily, @HeaderParam(CONSISTENCY_LEVEL_HEADER) String consistencyLevel)
+			throws Exception {
 		if (logger.isDebugEnabled())
 			logger.debug("Creating column family [" + keyspace + "]:[" + columnFamily + "]");
 		cassandraStorage.setKeyspace(keyspace);
-		return cassandraStorage.getRows(columnFamily, ConsistencyLevel.ALL);
+		return cassandraStorage.getRows(columnFamily, VirgilConfig.getConsistencyLevel(consistencyLevel));
 	}
 
 	@PUT
@@ -93,7 +96,6 @@ public class CassandraRestService {
 		cassandraStorage.createColumnFamily(keyspace, columnFamily);
 	}
 
-	
 	@DELETE
 	@Path("/data/{keyspace}/{columnFamily}")
 	@Produces({ "application/json" })
@@ -115,7 +117,8 @@ public class CassandraRestService {
 	@Path("/data/{keyspace}/{columnFamily}/{key}")
 	@Produces({ "application/json" })
 	public void patchRow(@PathParam("keyspace") String keyspace, @PathParam("columnFamily") String columnFamily,
-			@PathParam("key") String key, @QueryParam("index") boolean index, String body) throws Exception {
+			@PathParam("key") String key, @QueryParam("index") boolean index, String body,
+			@HeaderParam(CONSISTENCY_LEVEL_HEADER) String consistencyLevel) throws Exception {
 		cassandraStorage.setKeyspace(keyspace);
 		JSONObject json = (JSONObject) JSONValue.parse(body);
 
@@ -124,7 +127,8 @@ public class CassandraRestService {
 
 		if (logger.isDebugEnabled())
 			logger.debug("Setting column [" + keyspace + "]:[" + columnFamily + "]:[" + key + "] -> [" + json + "]");
-		cassandraStorage.setColumn(keyspace, columnFamily, key, json, ConsistencyLevel.ALL, index);
+		cassandraStorage.setColumn(keyspace, columnFamily, key, json,
+				VirgilConfig.getConsistencyLevel(consistencyLevel), index);
 	}
 
 	/*
@@ -134,7 +138,8 @@ public class CassandraRestService {
 	@Path("/data/{keyspace}/{columnFamily}/{key}")
 	@Produces({ "application/json" })
 	public void setRow(@PathParam("keyspace") String keyspace, @PathParam("columnFamily") String columnFamily,
-			@PathParam("key") String key, @QueryParam("index") boolean index, String body) throws Exception {
+			@PathParam("key") String key, @QueryParam("index") boolean index, String body,
+			@HeaderParam(CONSISTENCY_LEVEL_HEADER) String consistencyLevel) throws Exception {
 		cassandraStorage.setKeyspace(keyspace);
 		JSONObject json = (JSONObject) JSONValue.parse(body);
 
@@ -144,9 +149,10 @@ public class CassandraRestService {
 		if (logger.isDebugEnabled())
 			logger.debug("Setting column [" + keyspace + "]:[" + columnFamily + "]:[" + key + "] -> [" + json + "]");
 
-		long deleteTime = this.deleteRow(keyspace, columnFamily, key, index);
+		long deleteTime = this.deleteRow(keyspace, columnFamily, key, index, consistencyLevel);
 
-		cassandraStorage.setColumn(keyspace, columnFamily, key, json, ConsistencyLevel.ALL, index, deleteTime + 1);
+		cassandraStorage.setColumn(keyspace, columnFamily, key, json,
+				VirgilConfig.getConsistencyLevel(consistencyLevel), index, deleteTime + 1);
 	}
 
 	/*
@@ -156,12 +162,13 @@ public class CassandraRestService {
 	@Path("/data/{keyspace}/{columnFamily}/{key}")
 	@Produces({ "application/json" })
 	public String getRow(@PathParam("keyspace") String keyspace, @PathParam("columnFamily") String columnFamily,
-			@PathParam("key") String key) throws Exception {
+			@PathParam("key") String key, @HeaderParam(CONSISTENCY_LEVEL_HEADER) String consistencyLevel) throws Exception {
 		cassandraStorage.setKeyspace(keyspace);
 		if (logger.isDebugEnabled())
 			logger.debug("Getting row [" + keyspace + "]:[" + columnFamily + "]:[" + key + "]");
 
-		return cassandraStorage.getSlice(keyspace, columnFamily, key, ConsistencyLevel.ALL);
+		return cassandraStorage.getSlice(keyspace, columnFamily, key,
+				VirgilConfig.getConsistencyLevel(consistencyLevel));
 	}
 
 	/*
@@ -171,12 +178,14 @@ public class CassandraRestService {
 	@Path("/data/{keyspace}/{columnFamily}/{key}")
 	@Produces({ "application/json" })
 	public long deleteRow(@PathParam("keyspace") String keyspace, @PathParam("columnFamily") String columnFamily,
-			@PathParam("key") String key, @QueryParam("purgeIndex") boolean purgeIndex) throws Exception {
+			@PathParam("key") String key, @QueryParam("purgeIndex") boolean purgeIndex,
+			@HeaderParam(CONSISTENCY_LEVEL_HEADER) String consistencyLevel) throws Exception {
 		cassandraStorage.setKeyspace(keyspace);
 		if (logger.isDebugEnabled())
 			logger.debug("Deleting row [" + keyspace + "]:[" + columnFamily + "]:[" + key + "]");
 
-		return cassandraStorage.deleteRow(keyspace, columnFamily, key, ConsistencyLevel.ALL, purgeIndex);
+		return cassandraStorage.deleteRow(keyspace, columnFamily, key,
+				VirgilConfig.getConsistencyLevel(consistencyLevel), purgeIndex);
 	}
 
 	// ================================================================================================================
@@ -190,12 +199,14 @@ public class CassandraRestService {
 	@Path("/data/{keyspace}/{columnFamily}/{key}/{columnName}")
 	@Produces({ "application/json" })
 	public String getColumn(@PathParam("keyspace") String keyspace, @PathParam("columnFamily") String columnFamily,
-			@PathParam("key") String key, @PathParam("columnName") String columnName) throws Exception {
+			@PathParam("key") String key, @PathParam("columnName") String columnName,
+			@HeaderParam(CONSISTENCY_LEVEL_HEADER) String consistencyLevel) throws Exception {
 		cassandraStorage.setKeyspace(keyspace);
 		if (logger.isDebugEnabled())
 			logger.debug("Getting column [" + keyspace + "]:[" + columnFamily + "]:[" + key + "]:[" + columnName + "]");
 
-		return cassandraStorage.getColumn(keyspace, columnFamily, key, columnName, ConsistencyLevel.ALL);
+		return cassandraStorage.getColumn(keyspace, columnFamily, key, columnName,
+				VirgilConfig.getConsistencyLevel(consistencyLevel));
 	}
 
 	/*
@@ -206,11 +217,13 @@ public class CassandraRestService {
 	@Produces({ "application/json" })
 	public void addColumn(@PathParam("keyspace") String keyspace, @PathParam("columnFamily") String columnFamily,
 			@PathParam("key") String key, @PathParam("columnName") String columnName,
-			@QueryParam("index") boolean index, String body) throws Exception {
+			@QueryParam("index") boolean index, String body, @HeaderParam(CONSISTENCY_LEVEL_HEADER) String consistencyLevel)
+			throws Exception {
 		cassandraStorage.setKeyspace(keyspace);
 		if (logger.isDebugEnabled())
 			logger.debug("Deleting row [" + keyspace + "]:[" + columnFamily + "]:[" + key + "] => [" + body + "]");
-		cassandraStorage.addColumn(keyspace, columnFamily, key, columnName, body, ConsistencyLevel.ALL, index);
+		cassandraStorage.addColumn(keyspace, columnFamily, key, columnName, body,
+				VirgilConfig.getConsistencyLevel(consistencyLevel), index);
 	}
 
 	/*
@@ -221,10 +234,12 @@ public class CassandraRestService {
 	@Produces({ "application/json" })
 	public void deleteColumn(@PathParam("keyspace") String keyspace, @PathParam("columnFamily") String columnFamily,
 			@PathParam("key") String key, @PathParam("columnName") String columnName,
-			@QueryParam("purgeIndex") boolean purgeIndex) throws Exception {
+			@QueryParam("purgeIndex") boolean purgeIndex, @HeaderParam(CONSISTENCY_LEVEL_HEADER) String consistencyLevel)
+			throws Exception {
 		cassandraStorage.setKeyspace(keyspace);
 		if (logger.isDebugEnabled())
 			logger.debug("Deleting row [" + keyspace + "]:[" + columnFamily + "]:[" + key + "]");
-		cassandraStorage.deleteColumn(keyspace, columnFamily, key, columnName, ConsistencyLevel.ALL, purgeIndex);
+		cassandraStorage.deleteColumn(keyspace, columnFamily, key, columnName,
+				VirgilConfig.getConsistencyLevel(consistencyLevel), purgeIndex);
 	}
 }
