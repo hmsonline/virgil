@@ -1,6 +1,7 @@
 package org.apache.cassandra.http;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.MalformedInputException;
 import java.util.List;
 
 import org.apache.cassandra.thrift.CfDef;
@@ -41,8 +42,16 @@ public class JsonMarshaller {
 				for (ColumnOrSuperColumn column : row.columns){
 					JSONObject rowJson = new JSONObject();
 					rowJson.put("row", rowKey);
-					rowJson.put("column", ByteBufferUtil.string(column.column.name));
-					rowJson.put("value", ByteBufferUtil.string(column.column.value));
+					try {
+						rowJson.put("column", ByteBufferUtil.string(column.column.name));
+					} catch (MalformedInputException mfie){
+						rowJson.put("column", "NON-STRING (Support for non-strings is coming)");						
+					}
+					try {
+						rowJson.put("value", ByteBufferUtil.string(column.column.value));
+					} catch (MalformedInputException mfie){
+						rowJson.put("value", "NON-STRING (Support for non-strings is coming)");
+					}
 					cfJson.add(rowJson);
 				}
 			}
