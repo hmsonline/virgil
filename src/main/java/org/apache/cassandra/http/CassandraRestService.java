@@ -77,12 +77,40 @@ public class CassandraRestService {
 	@Path("/data/{keyspace}/{columnFamily}")
 	@Produces({ "application/json" })
 	public String getColumnFamily(@PathParam("keyspace") String keyspace,
-			@PathParam("columnFamily") String columnFamily, @HeaderParam(CONSISTENCY_LEVEL_HEADER) String consistencyLevel)
-			throws Exception {
+			@PathParam("columnFamily") String columnFamily,
+			@HeaderParam(CONSISTENCY_LEVEL_HEADER) String consistencyLevel) throws Exception {
 		if (logger.isDebugEnabled())
 			logger.debug("Creating column family [" + keyspace + "]:[" + columnFamily + "]");
 		cassandraStorage.setKeyspace(keyspace);
 		return cassandraStorage.getRows(columnFamily, VirgilConfig.getConsistencyLevel(consistencyLevel));
+	}
+
+	/*
+	 * Adds or updates rows in the column family.
+	 */
+	@PATCH
+	@Path("/data/{keyspace}/{columnFamily}")
+	@Produces({ "application/json" })
+	public void patchColumnFamily(@PathParam("keyspace") String keyspace,
+			@PathParam("columnFamily") String columnFamily, @QueryParam("index") boolean index, String body,
+			@HeaderParam(CONSISTENCY_LEVEL_HEADER) String consistencyLevel) throws Exception {
+		cassandraStorage.setKeyspace(keyspace);
+		JSONObject json = (JSONObject) JSONValue.parse(body);
+
+		if (json == null)
+			throw new RuntimeException("Could not parse the JSON object [" + body + "]");
+
+		if (logger.isDebugEnabled())
+			logger.debug("Patching column [" + keyspace + "]:[" + columnFamily + "] -> [" + json + "]");
+
+		// TODO: Should probably make this "more atomic" than it is batching 
+		//       everything into a single set of mutations.
+		for (Object rowKey : json.keySet()) {
+			JSONObject rowJson = (JSONObject) json.get(rowKey);
+			String key = (String) rowKey;
+			cassandraStorage.setColumn(keyspace, columnFamily, key, rowJson,
+					VirgilConfig.getConsistencyLevel(consistencyLevel), index);
+		}
 	}
 
 	@PUT
@@ -111,7 +139,7 @@ public class CassandraRestService {
 	// Row Operations
 	// ================================================================================================================
 	/*
-	 * Add's a row, each entry in the JSON map is a column
+	 * Adds or appends to a row, each entry in the JSON map is a column
 	 */
 	@PATCH
 	@Path("/data/{keyspace}/{columnFamily}/{key}")
@@ -126,13 +154,13 @@ public class CassandraRestService {
 			throw new RuntimeException("Could not parse the JSON object [" + body + "]");
 
 		if (logger.isDebugEnabled())
-			logger.debug("Setting column [" + keyspace + "]:[" + columnFamily + "]:[" + key + "] -> [" + json + "]");
+			logger.debug("Patching column [" + keyspace + "]:[" + columnFamily + "]:[" + key + "] -> [" + json + "]");
 		cassandraStorage.setColumn(keyspace, columnFamily, key, json,
 				VirgilConfig.getConsistencyLevel(consistencyLevel), index);
 	}
 
 	/*
-	 * Add's a row, each entry in the JSON map is a column
+	 * Add or replaces a row, each entry in the JSON map is a column
 	 */
 	@PUT
 	@Path("/data/{keyspace}/{columnFamily}/{key}")
@@ -147,7 +175,8 @@ public class CassandraRestService {
 			throw new RuntimeException("Could not parse the JSON object [" + body + "]");
 
 		if (logger.isDebugEnabled())
-			logger.debug("Setting column [" + keyspace + "]:[" + columnFamily + "]:[" + key + "] -> [" + json + "]");
+			logger.debug("Adding or updating row [" + keyspace + "]:[" + columnFamily + "]:[" + key + "] -> [" + json
+					+ "]");
 
 		long deleteTime = this.deleteRow(keyspace, columnFamily, key, index, consistencyLevel);
 
@@ -162,7 +191,8 @@ public class CassandraRestService {
 	@Path("/data/{keyspace}/{columnFamily}/{key}")
 	@Produces({ "application/json" })
 	public String getRow(@PathParam("keyspace") String keyspace, @PathParam("columnFamily") String columnFamily,
-			@PathParam("key") String key, @HeaderParam(CONSISTENCY_LEVEL_HEADER) String consistencyLevel) throws Exception {
+			@PathParam("key") String key, @HeaderParam(CONSISTENCY_LEVEL_HEADER) String consistencyLevel)
+			throws Exception {
 		cassandraStorage.setKeyspace(keyspace);
 		if (logger.isDebugEnabled())
 			logger.debug("Getting row [" + keyspace + "]:[" + columnFamily + "]:[" + key + "]");
@@ -217,8 +247,8 @@ public class CassandraRestService {
 	@Produces({ "application/json" })
 	public void addColumn(@PathParam("keyspace") String keyspace, @PathParam("columnFamily") String columnFamily,
 			@PathParam("key") String key, @PathParam("columnName") String columnName,
-			@QueryParam("index") boolean index, String body, @HeaderParam(CONSISTENCY_LEVEL_HEADER) String consistencyLevel)
-			throws Exception {
+			@QueryParam("index") boolean index, String body,
+			@HeaderParam(CONSISTENCY_LEVEL_HEADER) String consistencyLevel) throws Exception {
 		cassandraStorage.setKeyspace(keyspace);
 		if (logger.isDebugEnabled())
 			logger.debug("Deleting row [" + keyspace + "]:[" + columnFamily + "]:[" + key + "] => [" + body + "]");
