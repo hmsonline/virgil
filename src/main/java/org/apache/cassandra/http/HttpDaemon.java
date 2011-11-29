@@ -107,6 +107,7 @@ public class HttpDaemon extends CassandraDaemon {
 				SolrIndexer indexer = new SolrIndexer();
 				CassandraStorage storage = new CassandraStorage(indexer, client);
 				IHttpServer server = new ApacheCxfHttpServer("localhost", VirgilConfig.getListenPort(), storage);
+				server.start();
 			} catch (Exception e){
 				throw new RuntimeException(e);
 			}
