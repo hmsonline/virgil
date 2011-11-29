@@ -41,7 +41,20 @@ public class VirgilConfig {
 	public static boolean isIndexingEnabled() {
 		return (Boolean) VirgilConfig.getConfig().get("enable_indexing");
 	}
+	
+	public static boolean isEmbedded(){
+		return (Boolean) VirgilConfig.getConfig().get("embed_cassandra");
+	}
+	
+	public static String getCassandraHost(){
+		return (String) VirgilConfig.getConfig().get("cassandra_host");
+	}
 
+	public static Integer getCassandraPort(){
+		return (Integer) VirgilConfig.getConfig().get("cassandra_port");
+	}
+
+	
 	public static ConsistencyLevel getConsistencyLevel(String consistencyLevel) {
 		// Defaulting consistency level to ALL
 		if (consistencyLevel == null) 

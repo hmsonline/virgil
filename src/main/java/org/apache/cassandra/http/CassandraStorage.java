@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.cassandra.http.index.Indexer;
-import org.apache.cassandra.thrift.CassandraServer;
+import org.apache.cassandra.thrift.Cassandra;
 import org.apache.cassandra.thrift.CfDef;
 import org.apache.cassandra.thrift.Column;
 import org.apache.cassandra.thrift.ColumnOrSuperColumn;
@@ -45,12 +45,13 @@ import org.json.simple.JSONValue;
 public class CassandraStorage {
 	private static final int MAX_COLUMNS = 1000;
 	private static final int MAX_ROWS = 20;
-	static public CassandraServer server = new CassandraServer();
+	private static Cassandra.Iface server = null;
 	private Indexer indexer = null;
 
 	// TODO: Come back and make indexing AOP
-	public CassandraStorage(Indexer indexer) {
+	public CassandraStorage(Indexer indexer, Cassandra.Iface server) {
 		this.indexer = indexer;
+		CassandraStorage.server = server;
 	}
 
 	/*
