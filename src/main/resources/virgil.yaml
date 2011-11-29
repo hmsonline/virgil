@@ -11,7 +11,7 @@ http_listen_port: 8080
 # When running against a remote instance (embedded=false), 
 # cassandra_host and cassandra_port are used to locate the instance.
 # =========================================================================================================
-embed_cassandra: false
+embed_cassandra: true
 cassandra_host: localhost
 cassandra_port: 9160
 
