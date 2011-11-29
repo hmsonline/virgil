@@ -39,11 +39,6 @@ public class ApacheCxfHttpServer implements IHttpServer {
 		sf.setResourceProvider(CassandraRestService.class, new SingletonResourceProvider(new CassandraRestService(
 				cassandraStorage)));
 		sf.setAddress("http://" + host + ":" + port + "/");
-		Server cxfServer = sf.create();
-
-		// Add static content using this:
-		// http://cxf.apache.org/docs/standalone-http-transport.html
-		this.addStaticContent(sf, cxfServer);
 	}
 
 	public void addStaticContent(JAXRSServerFactoryBean serviceFactory, Server cxfServer) throws Exception {
@@ -81,7 +76,10 @@ public class ApacheCxfHttpServer implements IHttpServer {
 
 	public void start() {
 		try {
-			sf.create();
+			Server cxfServer = sf.create();
+			// Add static content using this:
+			// http://cxf.apache.org/docs/standalone-http-transport.html
+			this.addStaticContent(sf, cxfServer);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
