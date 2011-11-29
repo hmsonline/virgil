@@ -23,76 +23,93 @@ import java.net.URL;
 
 import org.apache.cassandra.config.DatabaseDescriptor;
 import org.apache.cassandra.http.index.SolrIndexer;
+import org.apache.cassandra.thrift.Cassandra;
 import org.apache.cassandra.thrift.CassandraDaemon;
+import org.apache.cassandra.thrift.CassandraServer;
+import org.apache.cassandra.thrift.TBinaryProtocol;
+import org.apache.thrift.protocol.TProtocol;
+import org.apache.thrift.transport.TFramedTransport;
+import org.apache.thrift.transport.TSocket;
+import org.apache.thrift.transport.TTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HttpDaemon extends CassandraDaemon
-{
-    private static Logger logger = LoggerFactory.getLogger(HttpDaemon.class);
-    private static HttpDaemon httpDaemon = null;
-    private static IHttpServer http;
-    private static CassandraStorage dataService;
+public class HttpDaemon extends CassandraDaemon {
+	private static Logger logger = LoggerFactory.getLogger(HttpDaemon.class);
+	private static HttpDaemon httpDaemon = null;
+	private static IHttpServer http;
+	private static CassandraStorage dataService;
 
-    @Override
-    public void startServer()
-    {
-    	super.startServer();
-    	http.start();
-    }
+	@Override
+	public void startServer() {
+		super.startServer();
+		http.start();
+	}
 
-    @Override
-    public void stopServer()
-    {
-    	super.stopServer();
-    	logger.info("Shutting down HttpDaemon and HttpServer.");
-        http.stop();
-    }
+	@Override
+	public void stopServer() {
+		super.stopServer();
+		logger.info("Shutting down HttpDaemon and HttpServer.");
+		http.stop();
+	}
 
-    @Override
-    protected void setup() throws IOException
-    {
-        super.setup();
-        try
-        {
-            SolrIndexer indexer = new SolrIndexer();
-            dataService = new CassandraStorage(indexer);
-            logger.info("Starting server on [" + listenAddr + ":" + VirgilConfig.getListenPort() + "]");
-            http = new ApacheCxfHttpServer(this.listenAddr.getHostName(), VirgilConfig.getListenPort(), dataService);
+	@Override
+	protected void setup() throws IOException {
+		super.setup();
+		try {
+			SolrIndexer indexer = new SolrIndexer();
+			dataService = new CassandraStorage(indexer, new CassandraServer());
+			logger.info("Starting server on [" + listenAddr + ":" + VirgilConfig.getListenPort() + "]");
+			http = new ApacheCxfHttpServer(this.listenAddr.getHostName(), VirgilConfig.getListenPort(), dataService);
+		} catch (Exception wtf) {
+			throw new RuntimeException(wtf);
+		}
+	}
 
-        }
-        catch (Exception wtf)
-        {
-            throw new RuntimeException(wtf);
-        }
-    }
+	public static CassandraStorage getDataService() {
+		return dataService;
+	}
 
-    public static CassandraStorage getDataService()
-    {
-        return dataService;
-    }
-    
-    public static void shutdown()
-    {
-        httpDaemon.stopServer();
-        httpDaemon.deactivate();
-    }
+	public static void shutdown() {
+		httpDaemon.stopServer();
+		httpDaemon.deactivate();
+	}
 
-    public static void main(String args[])
-    {
-    	// TDOD need to fix this so the "cassandra.yaml" file can live in a "conf" directory of a distribution
-    	// we should not be loading from a classpath resource (i.e. the user can't easily edit the config)
-        String CONFIG_URL = args[0];//"cassandra.yaml";
-        ClassLoader loader = DatabaseDescriptor.class.getClassLoader();
-        URL url = loader.getResource(CONFIG_URL);
-        try {
-            url.openStream();
-            System.setProperty("cassandra.config", CONFIG_URL);
-            System.setProperty("cassandra-foreground", "true");
-            httpDaemon = new HttpDaemon();
-            httpDaemon.activate();      
-        } catch (Exception e){
-            e.printStackTrace();
-        }
-    }
+	public static void main(String args[]) {
+		// TODO: Need to fix this so the "cassandra.yaml" file can live in a
+		// "conf" directory of a distribution
+		// we should not be loading from a classpath resource (i.e. the user
+		// can't easily edit the config)
+
+		if (VirgilConfig.isEmbedded()) {
+			System.out.println("Starting virgil with embedded cassandra server.");
+			String CONFIG_URL = args[0]; // "cassandra.yaml";
+			ClassLoader loader = DatabaseDescriptor.class.getClassLoader();
+			URL url = loader.getResource(CONFIG_URL);
+			try {
+				url.openStream();
+				System.setProperty("cassandra.config", CONFIG_URL);
+				System.setProperty("cassandra-foreground", "true");
+				httpDaemon = new HttpDaemon();
+				httpDaemon.activate();
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		} else {
+			try {
+				String host = VirgilConfig.getCassandraHost();
+				Integer port = VirgilConfig.getCassandraPort();
+				System.out.println("Starting virgil against remote cassandra server [" + host + ":" + port + "]");
+				TTransport tr = new TFramedTransport(new TSocket(host, port));
+				TProtocol proto = new TBinaryProtocol(tr);
+				tr.open();
+				Cassandra.Client client = new Cassandra.Client(proto);
+				SolrIndexer indexer = new SolrIndexer();
+				CassandraStorage storage = new CassandraStorage(indexer, client);
+				IHttpServer server = new ApacheCxfHttpServer("localhost", VirgilConfig.getListenPort(), storage);
+			} catch (Exception e){
+				throw new RuntimeException(e);
+			}
+		}
+	}
 }

@@ -1,6 +1,29 @@
-# URL to a SOLR instance that can be used for indexing.
+
+# =========================================================================================================
+# HTTP Settings
+# =========================================================================================================
+http_listen_port: 8080
+
+# =========================================================================================================
+# Run Modes
+# =========================================================================================================
+# Run mode allows virgil to run an embedded cassandra, or against a remote instance.
+# When running against a remote instance (embedded=false), 
+# cassandra_host and cassandra_port are used to locate the instance.
+# =========================================================================================================
+embed_cassandra: false
+cassandra_host: dlcirrus03.hmsonline.com
+cassandra_port: 9160
+
+# =========================================================================================================
+# Indexing
+# =========================================================================================================
+# Indexing mode allows virgil to index data as it is inserted/update/deleted into/from Cassandra.
+# There is overhead to indexing, enable it below.  
+# solr_host points to the SOLR instance to use for indxing.
+# =========================================================================================================
 solr_host: http://localhost:8983/solr/
 enable_indexing: true
 
-http_listen_port: 8080
+
 

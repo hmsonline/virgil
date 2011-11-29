@@ -30,72 +30,64 @@ import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 
+public class ApacheCxfHttpServer implements IHttpServer {
+	JAXRSServerFactoryBean sf = null;
 
-public class ApacheCxfHttpServer implements IHttpServer
-{
-    JAXRSServerFactoryBean sf = null;
+	public ApacheCxfHttpServer(String host, int port, CassandraStorage cassandraStorage) throws Exception {
+		sf = new JAXRSServerFactoryBean();
+		sf.setResourceClasses(CassandraRestService.class);
+		sf.setResourceProvider(CassandraRestService.class, new SingletonResourceProvider(new CassandraRestService(
+				cassandraStorage)));
+		sf.setAddress("http://" + host + ":" + port + "/");
+		Server cxfServer = sf.create();
 
-    public ApacheCxfHttpServer(String host, int port, CassandraStorage cassandraStorage) throws Exception
-    {
-        sf = new JAXRSServerFactoryBean();
-        sf.setResourceClasses(CassandraRestService.class);
-        sf.setResourceProvider(CassandraRestService.class,
-                new SingletonResourceProvider(new CassandraRestService(cassandraStorage)));
-        sf.setAddress("http://" + host + ":" + port + "/");
-        Server cxfServer = sf.create();
+		// Add static content using this:
+		// http://cxf.apache.org/docs/standalone-http-transport.html
+		this.addStaticContent(sf, cxfServer);
+	}
 
-        // Add static content using this:
-        // http://cxf.apache.org/docs/standalone-http-transport.html
-        this.addStaticContent(sf, cxfServer);
-    }
+	public void addStaticContent(JAXRSServerFactoryBean serviceFactory, Server cxfServer) throws Exception {
+		Destination dest = cxfServer.getDestination();
+		JettyHTTPDestination jettyDestination = JettyHTTPDestination.class.cast(dest);
+		ServerEngine engine = jettyDestination.getEngine();
+		JettyHTTPServerEngine serverEngine = JettyHTTPServerEngine.class.cast(engine);
+		org.eclipse.jetty.server.Server httpServer = serverEngine.getServer();
 
-    public void addStaticContent(JAXRSServerFactoryBean serviceFactory, Server cxfServer) throws Exception{
-    	Destination dest = cxfServer.getDestination(); 
-        JettyHTTPDestination jettyDestination = JettyHTTPDestination.class.cast(dest); 
-        ServerEngine engine = jettyDestination.getEngine(); 
-        JettyHTTPServerEngine serverEngine = JettyHTTPServerEngine.class.cast(engine); 
-        org.eclipse.jetty.server.Server httpServer = serverEngine.getServer(); 
-        
-        // Had to start the server to get the Jetty Server instance. 
-        // Have to stop it to add the custom Jetty handler. 
-        httpServer.stop(); 
-        httpServer.join(); 
-        
-        Handler[] existingHandlers = httpServer.getHandlers(); 
-        
-        ResourceHandler resourceHandler = new ResourceHandler(); 
-        resourceHandler.setDirectoriesListed(true); 
-        // TODO Fix this, it won't work in a distribution.
-        resourceHandler.setWelcomeFiles(new String[] {"index.html"}); 
-        resourceHandler.setResourceBase("./src/main/webapp/"); 
+		// Had to start the server to get the Jetty Server instance.
+		// Have to stop it to add the custom Jetty handler.
+		httpServer.stop();
+		httpServer.join();
 
-        HandlerList handlers = new HandlerList(); 
-        handlers.addHandler(resourceHandler); 
-        if (existingHandlers != null) { 
-                for (Handler h : existingHandlers) { 
-                        handlers.addHandler(h); 
-                } 
-        }	
-        httpServer.setHandler(handlers); 
+		Handler[] existingHandlers = httpServer.getHandlers();
 
-        httpServer.start(); 
-        System.out.println("Started..."); 
-    }
-    
-    public void start()
-    {
-        try
-        {
-            sf.create();
-        }
-        catch (Exception e)
-        {
-            throw new RuntimeException(e);
-        }
-    }
+		ResourceHandler resourceHandler = new ResourceHandler();
+		resourceHandler.setDirectoriesListed(true);
+		// TODO Fix this, it won't work in a distribution.
+		resourceHandler.setWelcomeFiles(new String[] { "index.html" });
+		resourceHandler.setResourceBase("./src/main/webapp/");
 
-    public void stop()
-    {
+		HandlerList handlers = new HandlerList();
+		handlers.addHandler(resourceHandler);
+		if (existingHandlers != null) {
+			for (Handler h : existingHandlers) {
+				handlers.addHandler(h);
+			}
+		}
+		httpServer.setHandler(handlers);
 
-    }
+		httpServer.start();
+		System.out.println("Started...");
+	}
+
+	public void start() {
+		try {
+			sf.create();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	public void stop() {
+
+	}
 }
