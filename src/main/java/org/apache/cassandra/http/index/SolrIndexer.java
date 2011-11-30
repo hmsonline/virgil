@@ -23,48 +23,51 @@ public class SolrIndexer implements Indexer {
 
 	@Override
 	public void index(String columnFamily, String rowKey, String json) throws Exception {
-        JSONObject row = (JSONObject) JSONValue.parse(json);
-        index(columnFamily, rowKey, row);
+		JSONObject row = (JSONObject) JSONValue.parse(json);
+		index(columnFamily, rowKey, row);
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public void index(String columnFamily, String rowKey, JSONObject row) throws Exception {
 		HttpClient client = new HttpClient();
 		PostMethod post = new PostMethod(solrUrl + "update/json?commit=true");
-        JSONObject document = new JSONObject();
+		JSONObject document = new JSONObject();
 
-        document.put("id", this.getDocumentId(columnFamily, rowKey));
-        document.put("rowKey" + DYNAMIC_FIELD_SUFFIX, rowKey);
-        document.put("columnFamily"  + DYNAMIC_FIELD_SUFFIX, columnFamily);
-        for (Object column : row.keySet()){
-        	document.put(column.toString().toLowerCase() + DYNAMIC_FIELD_SUFFIX, row.get(column));
-        }        
-        
-        // Index
+		document.put("id", this.getDocumentId(columnFamily, rowKey));
+		document.put("rowKey" + DYNAMIC_FIELD_SUFFIX, rowKey);
+		document.put("columnFamily" + DYNAMIC_FIELD_SUFFIX, columnFamily);
+		for (Object column : row.keySet()) {
+			document.put(column.toString().toLowerCase() + DYNAMIC_FIELD_SUFFIX, row.get(column));
+		}
+
+		// Index
 		RequestEntity requestEntity = new StringRequestEntity("[" + document.toString() + "]", CONTENT_TYPE, CHAR_SET);
-        post.setRequestEntity(requestEntity);
-		client.executeMethod(post);
-		post.releaseConnection();
+		post.setRequestEntity(requestEntity);
+		try {
+			client.executeMethod(post);
+		} finally {
+			post.releaseConnection();
+		}
 	}
-	
 
 	@Override
-	public void delete(String columnFamily, String rowKey) throws Exception{
+	public void delete(String columnFamily, String rowKey) throws Exception {
 		HttpClient client = new HttpClient();
 
 		// Commit
 		PostMethod post = new PostMethod(solrUrl + "update?commit=true");
 		String query = "id:" + this.getDocumentId(columnFamily, rowKey);
-		StringRequestEntity requestEntity = new StringRequestEntity("<delete><query>" + query + "</query></delete>", 
+		StringRequestEntity requestEntity = new StringRequestEntity("<delete><query>" + query + "</query></delete>",
 				XML_CONTENT_TYPE, CHAR_SET);
 		post.setRequestEntity(requestEntity);
 		client.executeMethod(post);
 		post.releaseConnection();
 	}
-	
-	// TODO: Could hash the rowkey and column then combine to avoid potential collisions.
-	private String getDocumentId(String columnFamily, String rowKey){
+
+	// TODO: Could hash the rowkey and column then combine to avoid potential
+	// collisions.
+	private String getDocumentId(String columnFamily, String rowKey) {
 		return columnFamily + "." + rowKey;
 	}
 }
