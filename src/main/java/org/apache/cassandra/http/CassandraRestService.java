@@ -3,6 +3,7 @@ package org.apache.cassandra.http;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
+import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -10,6 +11,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 
 import org.apache.cassandra.http.ext.PATCH;
+import org.apache.cassandra.http.mapreduce.CassandraMapReduce;
 import org.apache.cassandra.thrift.ConsistencyLevel;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -103,8 +105,8 @@ public class CassandraRestService {
 		if (logger.isDebugEnabled())
 			logger.debug("Patching column [" + keyspace + "]:[" + columnFamily + "] -> [" + json + "]");
 
-		// TODO: Should probably make this "more atomic" than it is batching 
-		//       everything into a single set of mutations.
+		// TODO: Should probably make this "more atomic" than it is batching
+		// everything into a single set of mutations.
 		for (Object rowKey : json.keySet()) {
 			JSONObject rowJson = (JSONObject) json.get(rowKey);
 			String key = (String) rowKey;
@@ -271,5 +273,38 @@ public class CassandraRestService {
 			logger.debug("Deleting row [" + keyspace + "]:[" + columnFamily + "]:[" + key + "]");
 		cassandraStorage.deleteColumn(keyspace, columnFamily, key, columnName,
 				VirgilConfig.getConsistencyLevel(consistencyLevel), purgeIndex);
+	}
+
+	// ================================================================================================================
+	// Map Reduce
+	// ================================================================================================================
+
+	@POST
+	@Path("/job")
+	@Produces({ "text/plain" })
+	public void patchColumnFamily(@QueryParam("jobName") String jobName,
+			@QueryParam("inputKeyspace") String inputKeyspace,
+			@QueryParam("inputColumnFamily") String inputColumnFamily,
+			@QueryParam("outputKeyspace") String outputKeyspace,
+			@QueryParam("outputColumnFamily") String outputColumnFamily, String source) throws Exception {
+		if (inputKeyspace == null)
+			throw new RuntimeException("Must supply inputKeyspace.");
+		if (inputColumnFamily == null)
+			throw new RuntimeException("Must supply inputColumnFamily.");
+		if (outputKeyspace == null)
+			throw new RuntimeException("Must supply outputKeyspace.");
+		if (outputColumnFamily == null)
+			throw new RuntimeException("Must supply outputColumnFamily.");
+
+		if (logger.isDebugEnabled()) {
+			logger.debug("Launching job [" + jobName + "]");
+			logger.debug("  --> Input  : Keyspace [" + inputKeyspace + "], ColumnFamily [" + inputColumnFamily + "]");
+			logger.debug("  <-- Output : Keyspace [" + outputKeyspace + "], ColumnFamily [" + outputColumnFamily + "]");
+		}
+
+		// System.out.println(source);
+
+		CassandraMapReduce.spawn(jobName, VirgilConfig.getCassandraHost(), VirgilConfig.getCassandraPort(),
+				inputKeyspace, inputColumnFamily, outputKeyspace, outputColumnFamily, source);
 	}
 }

@@ -47,7 +47,8 @@ public class VirgilConfig {
 	}
 	
 	public static String getCassandraHost(){
-		return (String) VirgilConfig.getConfig().get("cassandra_host");
+		if (VirgilConfig.isEmbedded()) return "localhost";
+		else return (String) VirgilConfig.getConfig().get("cassandra_host");
 	}
 
 	public static Integer getCassandraPort(){

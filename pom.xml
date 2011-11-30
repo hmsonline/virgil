@@ -39,6 +39,13 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.apache.hadoop</groupId>
+			<artifactId>hadoop-core</artifactId>
+			<version>0.20.2</version>
+		</dependency>
+
+
+		<dependency>
 			<groupId>org.apache.cassandra</groupId>
 			<artifactId>cassandra-all</artifactId>
 			<version>1.0.2</version>
@@ -50,6 +57,14 @@
 			<version>4.7</version>
 			<scope>test</scope>
 		</dependency>
+
+		<!-- Ruby Consolidation -->
+		<dependency>
+			<groupId>org.jruby</groupId>
+			<artifactId>jruby-complete</artifactId>
+			<version>1.6.4</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>
