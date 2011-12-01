@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jruby.RubyArray;
 import org.jruby.embed.LocalContextScope;
 import org.jruby.embed.ScriptingContainer;
 import org.junit.Test;
@@ -19,6 +20,7 @@ public class ScriptInvokerTest {
 	@Test
 	public void testMapInvocation() throws Exception {
 		String source = getSource();
+		System.out.println(source);
 		ScriptingContainer rubyContainer = new ScriptingContainer(LocalContextScope.CONCURRENT);
 		Object rubyReceiver = rubyContainer.runScriptlet(source);
 
@@ -26,10 +28,8 @@ public class ScriptInvokerTest {
 		columns.put("collin", "42");
 		columns.put("owen", "33");
 
-		Map<String, String> results = ScriptInvoker.invokeMap(rubyContainer, rubyReceiver, "rockwall", columns);
-		assertEquals("84", results.get("collin"));
-		assertEquals("66", results.get("owen"));
-		assertEquals(2, results.size());
+		RubyArray tuples = ScriptInvoker.invokeMap(rubyContainer, rubyReceiver, "rockwall", columns);
+		assertEquals(2, tuples.size());
 	}
 
 	@Test
@@ -47,7 +47,7 @@ public class ScriptInvokerTest {
 	}
 
 	public static String getSource() throws IOException {
-		InputStream is = Test.class.getResourceAsStream("/mapreduce.rb");
+		InputStream is = Test.class.getResourceAsStream("/wordcount.rb");
 		BufferedReader reader = new BufferedReader(new InputStreamReader(is));
 		StringBuilder sb = new StringBuilder();
 		String line = null;
