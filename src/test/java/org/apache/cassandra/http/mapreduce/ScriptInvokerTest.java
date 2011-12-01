@@ -27,8 +27,8 @@ public class ScriptInvokerTest {
 		columns.put("owen", "33");
 
 		Map<String, String> results = ScriptInvoker.invokeMap(rubyContainer, rubyReceiver, "rockwall", columns);
-		assertEquals(new Long(84), results.get("collin"));
-		assertEquals(new Long(66), results.get("owen"));
+		assertEquals("84", results.get("collin"));
+		assertEquals("66", results.get("owen"));
 		assertEquals(2, results.size());
 	}
 
@@ -47,7 +47,7 @@ public class ScriptInvokerTest {
 	}
 
 	public static String getSource() throws IOException {
-		InputStream is = Test.class.getResourceAsStream("/double.rb");
+		InputStream is = Test.class.getResourceAsStream("/mapreduce.rb");
 		BufferedReader reader = new BufferedReader(new InputStreamReader(is));
 		StringBuilder sb = new StringBuilder();
 		String line = null;
