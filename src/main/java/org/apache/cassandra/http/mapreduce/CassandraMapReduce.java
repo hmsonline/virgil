@@ -13,6 +13,7 @@ import org.apache.cassandra.db.IColumn;
 import org.apache.cassandra.hadoop.ColumnFamilyInputFormat;
 import org.apache.cassandra.hadoop.ColumnFamilyOutputFormat;
 import org.apache.cassandra.hadoop.ConfigHelper;
+import org.apache.cassandra.http.CassandraRestService;
 import org.apache.cassandra.thrift.Column;
 import org.apache.cassandra.thrift.ColumnOrSuperColumn;
 import org.apache.cassandra.thrift.Mutation;
@@ -29,6 +30,8 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.jruby.embed.LocalContextScope;
 import org.jruby.embed.ScriptingContainer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Map/Reduce Job
@@ -82,6 +85,7 @@ public class CassandraMapReduce extends Configured implements Tool {
 	public static class CassandraMapper extends Mapper<ByteBuffer, SortedMap<ByteBuffer, IColumn>, Text, Text> {
 		private ScriptingContainer rubyContainer = null;
 		private Object rubyReceiver = null;
+		private static Logger logger = LoggerFactory.getLogger(CassandraRestService.class);
 
 		@Override
 		protected void map(ByteBuffer key, SortedMap<ByteBuffer, IColumn> value, Context context) throws IOException,
@@ -92,13 +96,13 @@ public class CassandraMapReduce extends Configured implements Tool {
 			}
 			String rowKey = ByteBufferUtil.string(key);
 			try {
-				System.out.println("Processing [" + rowKey + "]");
 				Map<String, String> results = ScriptInvoker.invokeMap(rubyContainer, rubyReceiver, rowKey, columns);
 				for (String resultKey : results.keySet()) {
 					context.write(new Text(resultKey), new Text(results.get(resultKey)));
 				}
 			} catch (Exception e) {
-				throw new RuntimeException(e);
+				// TODO: Make this more severe.
+				logger.warn("Exception running map on [" + rowKey +"]", e);
 			}
 		}
 
