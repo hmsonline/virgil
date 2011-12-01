@@ -4,14 +4,15 @@ import java.util.List;
 import java.util.Map;
 
 import javax.script.ScriptException;
+
+import org.jruby.RubyArray;
 import org.jruby.embed.ScriptingContainer;
 
 public class ScriptInvoker {
 
-	@SuppressWarnings("unchecked")
-	public static synchronized Map<String, String> invokeMap(ScriptingContainer container, Object rubyReceiver,
+	public static synchronized RubyArray invokeMap(ScriptingContainer container, Object rubyReceiver,
 			String rowKey, Map<String, String> columns) throws ScriptException {
-		return (Map<String, String>) container.callMethod(rubyReceiver, "map", rowKey, columns);
+		return (RubyArray) container.callMethod(rubyReceiver, "map", rowKey, columns);
 	}
 
 	@SuppressWarnings("unchecked")

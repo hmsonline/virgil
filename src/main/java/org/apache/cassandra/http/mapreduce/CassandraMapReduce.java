@@ -28,6 +28,7 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
+import org.jruby.RubyArray;
 import org.jruby.embed.LocalContextScope;
 import org.jruby.embed.ScriptingContainer;
 import org.slf4j.Logger;
@@ -96,9 +97,10 @@ public class CassandraMapReduce extends Configured implements Tool {
 			}
 			String rowKey = ByteBufferUtil.string(key);
 			try {
-				Map<String, String> results = ScriptInvoker.invokeMap(rubyContainer, rubyReceiver, rowKey, columns);
-				for (String resultKey : results.keySet()) {
-					context.write(new Text(resultKey), new Text(results.get(resultKey)));
+				RubyArray tuples = ScriptInvoker.invokeMap(rubyContainer, rubyReceiver, rowKey, columns);
+				for (Object element : tuples) {
+					RubyArray tuple = (RubyArray) element;
+					context.write(new Text((String) tuple.get(0)), new Text((String) tuple.get(1)));
 				}
 			} catch (Exception e) {
 				// TODO: Make this more severe.
