@@ -179,7 +179,7 @@ public class CassandraStorage {
 		ColumnPath path = new ColumnPath(columnFamily);
 		path.setColumn(ByteBufferUtil.bytes(column));
 		ColumnOrSuperColumn column_result = server.get(ByteBufferUtil.bytes(key), path, consistencyLevel);
-		return JsonMarshaller.marshallColumn(column_result);
+		return new String(column_result.getColumn().getValue(), "UTF8");
 	}
 
 	public String getRows(String columnFamily, ConsistencyLevel consistencyLevel) throws Exception {

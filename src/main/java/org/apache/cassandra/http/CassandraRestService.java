@@ -229,7 +229,6 @@ public class CassandraRestService {
 	 */
 	@GET
 	@Path("/data/{keyspace}/{columnFamily}/{key}/{columnName}")
-	@Produces({ "application/json" })
 	public String getColumn(@PathParam("keyspace") String keyspace, @PathParam("columnFamily") String columnFamily,
 			@PathParam("key") String key, @PathParam("columnName") String columnName,
 			@HeaderParam(CONSISTENCY_LEVEL_HEADER) String consistencyLevel) throws Exception {
