@@ -43,7 +43,7 @@ public class ScriptInvokerTest {
 		values.add("3");
 		values.add("5");
 		Map<String, Map<String, String>> results = ScriptInvoker.invokeReduce(rubyContainer, rubyReceiver, key, values);
-		assertEquals(3, results.size());
+		assertEquals(1, results.size());
 	}
 
 	public static String getSource() throws IOException {
