@@ -95,7 +95,7 @@ public class HttpTest {
 		get = new GetMethod(BASE_URL + KEYSPACE + "/" + COLUMN_FAMILY + "/" + KEY + "/CITY");
 		this.send(client, get, 200);
 		body = get.getResponseBodyAsString();
-		assertEquals("{\"CITY\":\"Souderton.\"}", body);
+		assertEquals("Souderton.", body);
 		logger.debug(body);
 
 		// DELETE COLUMN
