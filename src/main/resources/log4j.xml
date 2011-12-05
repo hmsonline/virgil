@@ -19,16 +19,16 @@
 	</appender>
 	
 	<logger name="org.apache.cxf">
-		<level value="DEBUG" />
+		<level value="WARN" />
 		<appender-ref ref="HTTP_FILE" />
 	</logger>
 
 	<logger name="org.apache.cassandra">
-		<level value="INFO" />
+		<level value="WARN" />
 	</logger>
 
 	<logger name="org.apache.cassandra.http">
-		<level value="DEBUG" />
+		<level value="WARN" />
 		<appender-ref ref="HTTP_FILE" />
 	</logger>
 
