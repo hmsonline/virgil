@@ -33,4 +33,4 @@ fi
 CLASSATH=$CLASSPATH:$cwd/conf/
 
 
-$JAVA -cp $CLASSPATH org.apache.cassandra.http.HttpDaemon cassandra.yaml
+$JAVA -cp $CLASSPATH org.apache.cassandra.http.HttpDaemon $@
