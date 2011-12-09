@@ -8,7 +8,7 @@ import javax.script.ScriptException;
 import org.jruby.RubyArray;
 import org.jruby.embed.ScriptingContainer;
 
-public class ScriptInvoker {
+public class RubyInvoker {
 
 	public static synchronized RubyArray invokeMap(ScriptingContainer container, Object rubyReceiver,
 			String rowKey, Map<String, String> columns) throws ScriptException {
