@@ -18,6 +18,18 @@
 				<include>NOTICE*</include>
 			</includes>
 		</fileSet>
+		<fileSet>
+			<directory>${basedir}/src/main/sh</directory>
+			<outputDirectory>bin</outputDirectory>
+		</fileSet>
+		<fileSet>
+			<directory>${basedir}/src/main/resources</directory>
+			<outputDirectory>conf</outputDirectory>
+		</fileSet>
+		<fileSet>
+			<directory>${basedir}/src/main/webapp</directory>
+			<outputDirectory>www</outputDirectory>
+		</fileSet>
 	</fileSets>
 	<dependencySets>
 		<dependencySet>

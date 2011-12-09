@@ -3,17 +3,7 @@
 # HTTP Settings
 # =========================================================================================================
 http_listen_port: 8080
-
-# =========================================================================================================
-# Run Modes
-# =========================================================================================================
-# Run mode allows virgil to run an embedded cassandra, or against a remote instance.
-# When running against a remote instance (embedded=false), 
-# cassandra_host and cassandra_port are used to locate the instance.
-# =========================================================================================================
-embed_cassandra: true
-cassandra_host: localhost
-cassandra_port: 9160
+http_bind_host: localhost
 
 # =========================================================================================================
 # Indexing
