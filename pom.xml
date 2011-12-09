@@ -48,7 +48,7 @@
 		<dependency>
 			<groupId>org.apache.cassandra</groupId>
 			<artifactId>cassandra-all</artifactId>
-			<version>1.0.2</version>
+			<version>1.0.5</version>
 		</dependency>
 
 		<dependency>
@@ -83,20 +83,6 @@
 					<showWarnings>true</showWarnings>
 				</configuration>
 				<version>2.3.2</version>
-			</plugin>
-			<plugin>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<executions>
-					<execution>
-						<phase>install</phase>
-						<goals>
-							<goal>copy-dependencies</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${project.build.directory}/lib</outputDirectory>
-						</configuration>
-					</execution>
-				</executions>
 			</plugin>
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>

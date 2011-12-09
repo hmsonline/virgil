@@ -11,7 +11,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 
 import org.apache.cassandra.http.ext.PATCH;
-import org.apache.cassandra.http.mapreduce.CassandraMapReduce;
+import org.apache.cassandra.http.mapreduce.RubyMapReduce;
 import org.apache.cassandra.thrift.ConsistencyLevel;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -303,7 +303,7 @@ public class CassandraRestService {
 
 		// System.out.println(source);
 
-		CassandraMapReduce.spawn(jobName, VirgilConfig.getCassandraHost(), VirgilConfig.getCassandraPort(),
+		RubyMapReduce.spawn(jobName, VirgilConfig.getCassandraHost(), VirgilConfig.getCassandraPort(),
 				inputKeyspace, inputColumnFamily, outputKeyspace, outputColumnFamily, source);
 	}
 }

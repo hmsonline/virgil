@@ -16,11 +16,11 @@ import org.jruby.embed.LocalContextScope;
 import org.jruby.embed.ScriptingContainer;
 import org.junit.Test;
 
-public class ScriptInvokerTest {
+public class RubyInvokerTest {
 	@Test
 	public void testMapInvocation() throws Exception {
 		String source = getSource();
-		System.out.println(source);
+		//System.out.println(source);
 		ScriptingContainer rubyContainer = new ScriptingContainer(LocalContextScope.CONCURRENT);
 		Object rubyReceiver = rubyContainer.runScriptlet(source);
 
@@ -28,7 +28,7 @@ public class ScriptInvokerTest {
 		columns.put("collin", "42");
 		columns.put("owen", "33");
 
-		RubyArray tuples = ScriptInvoker.invokeMap(rubyContainer, rubyReceiver, "rockwall", columns);
+		RubyArray tuples = RubyInvoker.invokeMap(rubyContainer, rubyReceiver, "rockwall", columns);
 		assertEquals(2, tuples.size());
 	}
 
@@ -42,7 +42,7 @@ public class ScriptInvokerTest {
 		values.add("1");
 		values.add("3");
 		values.add("5");
-		Map<String, Map<String, String>> results = ScriptInvoker.invokeReduce(rubyContainer, rubyReceiver, key, values);
+		Map<String, Map<String, String>> results = RubyInvoker.invokeReduce(rubyContainer, rubyReceiver, key, values);
 		assertEquals(1, results.size());
 	}
 
