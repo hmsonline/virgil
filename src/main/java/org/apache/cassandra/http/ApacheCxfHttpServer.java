@@ -19,6 +19,8 @@
 
 package org.apache.cassandra.http;
 
+import java.io.File;
+
 import org.apache.cxf.endpoint.Server;
 import org.apache.cxf.jaxrs.JAXRSServerFactoryBean;
 import org.apache.cxf.jaxrs.lifecycle.SingletonResourceProvider;
@@ -57,9 +59,12 @@ public class ApacheCxfHttpServer implements IHttpServer {
 
 		ResourceHandler resourceHandler = new ResourceHandler();
 		resourceHandler.setDirectoriesListed(true);
-		// TODO Fix this, it won't work in a distribution.
 		resourceHandler.setWelcomeFiles(new String[] { "index.html" });
-		resourceHandler.setResourceBase("./src/main/webapp/");
+		if (new File("www").exists()) {
+			resourceHandler.setResourceBase("./www/");
+		} else {
+			resourceHandler.setResourceBase("./src/main/webapp/");
+		}
 
 		HandlerList handlers = new HandlerList();
 		handlers.addHandler(resourceHandler);
@@ -69,9 +74,8 @@ public class ApacheCxfHttpServer implements IHttpServer {
 			}
 		}
 		httpServer.setHandler(handlers);
-
 		httpServer.start();
-		System.out.println("Started...");
+		System.out.println("Started.");
 	}
 
 	public void start() {

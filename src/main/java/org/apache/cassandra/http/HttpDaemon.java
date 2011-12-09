@@ -19,9 +19,11 @@
 package org.apache.cassandra.http;
 
 import java.io.IOException;
-import java.net.URL;
 
-import org.apache.cassandra.config.DatabaseDescriptor;
+import joptsimple.OptionParser;
+import joptsimple.OptionSet;
+import joptsimple.OptionSpec;
+
 import org.apache.cassandra.http.index.SolrIndexer;
 import org.apache.cassandra.thrift.Cassandra;
 import org.apache.cassandra.thrift.CassandraDaemon;
@@ -60,7 +62,7 @@ public class HttpDaemon extends CassandraDaemon {
 			SolrIndexer indexer = new SolrIndexer();
 			dataService = new CassandraStorage(indexer, new CassandraServer());
 			logger.info("Starting server on [" + listenAddr + ":" + VirgilConfig.getListenPort() + "]");
-			http = new ApacheCxfHttpServer(this.listenAddr.getHostName(), VirgilConfig.getListenPort(), dataService);
+			http = new ApacheCxfHttpServer(VirgilConfig.getBindHost(), VirgilConfig.getListenPort(), dataService);
 		} catch (Exception wtf) {
 			throw new RuntimeException(wtf);
 		}
@@ -75,41 +77,57 @@ public class HttpDaemon extends CassandraDaemon {
 		httpDaemon.deactivate();
 	}
 
-	public static void main(String args[]) {
-		// TODO: Need to fix this so the "cassandra.yaml" file can live in a
-		// "conf" directory of a distribution
-		// we should not be loading from a classpath resource (i.e. the user
-		// can't easily edit the config)
+	public static void showUsage() {
+		System.out.println("Usage: bin/virgil -h CASSANDRA_HOST [-p CASSANDRA_PORT]\n");
+		System.out.println("Usage for embedded Cassandra: bin/virgil -e");		
+		System.exit(-1);
+	}
 
-		if (VirgilConfig.isEmbedded()) {
-			System.out.println("Starting virgil with embedded cassandra server.");
-			String CONFIG_URL = args[0]; // "cassandra.yaml";
-			ClassLoader loader = DatabaseDescriptor.class.getClassLoader();
-			URL url = loader.getResource(CONFIG_URL);
-			try {
-				url.openStream();
-				System.setProperty("cassandra.config", CONFIG_URL);
-				System.setProperty("cassandra-foreground", "true");
-				httpDaemon = new HttpDaemon();
-				httpDaemon.activate();
-			} catch (Exception e) {
-				throw new RuntimeException(e);
-			}
+	public static void main(String args[]) {
+		if (args.length == 0) {
+			HttpDaemon.showUsage();
 		} else {
-			try {
-				String host = VirgilConfig.getCassandraHost();
-				Integer port = VirgilConfig.getCassandraPort();
-				System.out.println("Starting virgil against remote cassandra server [" + host + ":" + port + "]");
-				TTransport tr = new TFramedTransport(new TSocket(host, port));
-				TProtocol proto = new TBinaryProtocol(tr);
-				tr.open();
-				Cassandra.Client client = new Cassandra.Client(proto);
-				SolrIndexer indexer = new SolrIndexer();
-				CassandraStorage storage = new CassandraStorage(indexer, client);
-				IHttpServer server = new ApacheCxfHttpServer("localhost", VirgilConfig.getListenPort(), storage);
-				server.start();
-			} catch (Exception e){
-				throw new RuntimeException(e);
+			OptionParser parser = new OptionParser();
+			OptionSpec<String> cassandraHost = parser.accepts("host").withRequiredArg().ofType(String.class);
+			OptionSpec<Void> embedCassandra = parser.accepts("embedded");
+			OptionSpec<Integer> cassandraPort = parser.accepts("port").withOptionalArg().ofType(Integer.class)
+					.defaultsTo(9160);
+			OptionSet options = parser.parse(args);
+
+			if (options.has(embedCassandra)) {
+				System.out.println("Starting virgil with embedded cassandra server.");
+				try {
+					System.setProperty("cassandra.config", "cassandra.yaml");
+					System.setProperty("cassandra-foreground", "true");
+					httpDaemon = new HttpDaemon();
+					httpDaemon.activate();
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+			} else {
+				if (options.hasArgument(cassandraHost)) {
+					System.setProperty(VirgilConfig.CASSANDRA_HOST_PROPERTY, cassandraHost.value(options));
+				} else {
+					HttpDaemon.showUsage();
+				}
+				System.setProperty(VirgilConfig.CASSANDRA_PORT_PROPERTY, Integer.toString(cassandraPort.value(options)));
+
+				try {
+					String host = VirgilConfig.getCassandraHost();
+					Integer port = VirgilConfig.getCassandraPort();
+					System.out.println("Starting virgil against remote cassandra server [" + host + ":" + port + "]");
+					TTransport tr = new TFramedTransport(new TSocket(host, port));
+					TProtocol proto = new TBinaryProtocol(tr);
+					tr.open();
+					Cassandra.Client client = new Cassandra.Client(proto);
+					SolrIndexer indexer = new SolrIndexer();
+					CassandraStorage storage = new CassandraStorage(indexer, client);
+					IHttpServer server = new ApacheCxfHttpServer(VirgilConfig.getBindHost(),
+							VirgilConfig.getListenPort(), storage);
+					server.start();
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
 			}
 		}
 	}
