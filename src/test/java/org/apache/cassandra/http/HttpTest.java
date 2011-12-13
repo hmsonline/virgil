@@ -26,7 +26,7 @@ public class HttpTest {
 
 	@BeforeClass
 	public static void setup() throws Exception {
-		HttpDaemon.main(new String[]{"-e"});
+		HttpDaemon.main(new String[] { "-e", "-yaml", "cassandra_test.yaml" });
 	}
 
 	@AfterClass

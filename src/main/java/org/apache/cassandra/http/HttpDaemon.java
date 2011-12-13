@@ -61,8 +61,10 @@ public class HttpDaemon extends CassandraDaemon {
 		try {
 			SolrIndexer indexer = new SolrIndexer();
 			dataService = new CassandraStorage(indexer, new CassandraServer());
-			logger.info("Starting server on [" + listenAddr + ":" + VirgilConfig.getListenPort() + "]");
-			http = new ApacheCxfHttpServer(VirgilConfig.getBindHost(), VirgilConfig.getListenPort(), dataService);
+			logger.info("Starting server on [" + listenAddr + ":"
+					+ VirgilConfig.getListenPort() + "]");
+			http = new ApacheCxfHttpServer(VirgilConfig.getBindHost(),
+					VirgilConfig.getListenPort(), dataService);
 		} catch (Exception wtf) {
 			throw new RuntimeException(wtf);
 		}
@@ -78,8 +80,9 @@ public class HttpDaemon extends CassandraDaemon {
 	}
 
 	public static void showUsage() {
-		System.out.println("Usage: bin/virgil -h CASSANDRA_HOST [-p CASSANDRA_PORT]\n");
-		System.out.println("Usage for embedded Cassandra: bin/virgil -e");		
+		System.out
+				.println("Usage: bin/virgil -h CASSANDRA_HOST [-p CASSANDRA_PORT]\n");
+		System.out.println("Usage for embedded Cassandra: bin/virgil -e");
 		System.exit(-1);
 	}
 
@@ -88,19 +91,25 @@ public class HttpDaemon extends CassandraDaemon {
 			HttpDaemon.showUsage();
 		} else {
 			OptionParser parser = new OptionParser();
-			OptionSpec<String> cassandraHost = parser.accepts("host").withRequiredArg().ofType(String.class);
+			OptionSpec<String> cassandraHost = parser.accepts("host")
+					.withRequiredArg().ofType(String.class);
+			OptionSpec<String> yaml = parser.accepts("yaml").withRequiredArg()
+					.ofType(String.class).defaultsTo("cassandra.yaml");
 			OptionSpec<Void> embedCassandra = parser.accepts("embedded");
-			OptionSpec<Integer> cassandraPort = parser.accepts("port").withOptionalArg().ofType(Integer.class)
-					.defaultsTo(9160);
+			OptionSpec<Integer> cassandraPort = parser.accepts("port")
+					.withOptionalArg().ofType(Integer.class).defaultsTo(9160);
 			OptionSet options = parser.parse(args);
 
 			if (options.has(embedCassandra)) {
-				System.out.println("Starting virgil with embedded cassandra server.");
+				System.out
+						.println("Starting virgil with embedded cassandra server.");
 				try {
-					System.setProperty("cassandra.config", "cassandra.yaml");
+					System.setProperty("cassandra.config", yaml.value(options));
 					System.setProperty("cassandra-foreground", "true");
-					System.setProperty(VirgilConfig.CASSANDRA_PORT_PROPERTY, "9160");
-					System.setProperty(VirgilConfig.CASSANDRA_HOST_PROPERTY, "localhost");
+					System.setProperty(VirgilConfig.CASSANDRA_PORT_PROPERTY,
+							"9160");
+					System.setProperty(VirgilConfig.CASSANDRA_HOST_PROPERTY,
+							"localhost");
 
 					httpDaemon = new HttpDaemon();
 					httpDaemon.activate();
@@ -109,23 +118,30 @@ public class HttpDaemon extends CassandraDaemon {
 				}
 			} else {
 				if (options.hasArgument(cassandraHost)) {
-					System.setProperty(VirgilConfig.CASSANDRA_HOST_PROPERTY, cassandraHost.value(options));
+					System.setProperty(VirgilConfig.CASSANDRA_HOST_PROPERTY,
+							cassandraHost.value(options));
 				} else {
 					HttpDaemon.showUsage();
 				}
-				System.setProperty(VirgilConfig.CASSANDRA_PORT_PROPERTY, Integer.toString(cassandraPort.value(options)));
+				System.setProperty(VirgilConfig.CASSANDRA_PORT_PROPERTY,
+						Integer.toString(cassandraPort.value(options)));
 
 				try {
 					String host = VirgilConfig.getCassandraHost();
 					Integer port = VirgilConfig.getCassandraPort();
-					System.out.println("Starting virgil against remote cassandra server [" + host + ":" + port + "]");
-					TTransport tr = new TFramedTransport(new TSocket(host, port));
+					System.out
+							.println("Starting virgil against remote cassandra server ["
+									+ host + ":" + port + "]");
+					TTransport tr = new TFramedTransport(
+							new TSocket(host, port));
 					TProtocol proto = new TBinaryProtocol(tr);
 					tr.open();
 					Cassandra.Client client = new Cassandra.Client(proto);
 					SolrIndexer indexer = new SolrIndexer();
-					CassandraStorage storage = new CassandraStorage(indexer, client);
-					IHttpServer server = new ApacheCxfHttpServer(VirgilConfig.getBindHost(),
+					CassandraStorage storage = new CassandraStorage(indexer,
+							client);
+					IHttpServer server = new ApacheCxfHttpServer(
+							VirgilConfig.getBindHost(),
 							VirgilConfig.getListenPort(), storage);
 					server.start();
 				} catch (Exception e) {

@@ -17,7 +17,7 @@ public class CassandraStorageTest {
 
 	@BeforeClass
 	public static void setup() throws Exception {
-		HttpDaemon.main(new String[] { "-e" });
+		HttpDaemon.main(new String[] { "-e", "-yaml", "cassandra_test.yaml" });
 		Thread.sleep(2000);
 	}
 
