@@ -281,7 +281,7 @@ public class CassandraRestService {
 	@POST
 	@Path("/job")
 	@Produces({ "text/plain" })
-	public void patchColumnFamily(@QueryParam("jobName") String jobName,
+	public void mapReduce(@QueryParam("jobName") String jobName,
 			@QueryParam("inputKeyspace") String inputKeyspace,
 			@QueryParam("inputColumnFamily") String inputColumnFamily,
 			@QueryParam("outputKeyspace") String outputKeyspace,

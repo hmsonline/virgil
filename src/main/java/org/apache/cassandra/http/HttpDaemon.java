@@ -99,6 +99,9 @@ public class HttpDaemon extends CassandraDaemon {
 				try {
 					System.setProperty("cassandra.config", "cassandra.yaml");
 					System.setProperty("cassandra-foreground", "true");
+					System.setProperty(VirgilConfig.CASSANDRA_PORT_PROPERTY, "9160");
+					System.setProperty(VirgilConfig.CASSANDRA_HOST_PROPERTY, "localhost");
+
 					httpDaemon = new HttpDaemon();
 					httpDaemon.activate();
 				} catch (Exception e) {

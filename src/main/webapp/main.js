@@ -48,7 +48,11 @@ Ext.onReady(function() {
         {
             text: 'Value',
 			flex: 1,
-            dataIndex: 'value'
+            dataIndex: 'value',
+            renderer: function(value){
+                var display = '<p style="white-space:normal">' + value + '</p>';
+                return display;
+            }
         }]
     });
 
