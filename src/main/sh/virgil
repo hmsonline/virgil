@@ -30,7 +30,6 @@ else
     JAVA=`which java`
 fi
 
-CLASSATH=$CLASSPATH:$cwd/conf/
-
+CLASSPATH=$CLASSPATH:$cwd/../conf/
 
 $JAVA -cp $CLASSPATH org.apache.cassandra.http.HttpDaemon $@

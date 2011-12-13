@@ -104,7 +104,8 @@ public class HttpDaemon extends CassandraDaemon {
 				System.out
 						.println("Starting virgil with embedded cassandra server.");
 				try {
-					System.setProperty("cassandra.config", yaml.value(options));
+					String yamlFile = yaml.value(options);
+					System.setProperty("cassandra.config", yamlFile);
 					System.setProperty("cassandra-foreground", "true");
 					System.setProperty(VirgilConfig.CASSANDRA_PORT_PROPERTY,
 							"9160");

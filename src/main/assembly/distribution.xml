@@ -23,7 +23,7 @@
 			<outputDirectory>bin</outputDirectory>
 		</fileSet>
 		<fileSet>
-			<directory>${basedir}/src/main/resources</directory>
+			<directory>${basedir}/src/main/assembly/resources</directory>
 			<outputDirectory>conf</outputDirectory>
 		</fileSet>
 		<fileSet>
