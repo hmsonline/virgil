@@ -4,7 +4,7 @@
 	<groupId>org.apache.cassandra.rest</groupId>
 	<artifactId>virgil</artifactId>
 	<packaging>jar</packaging>
-	<version>1.0.5-SNAPSHOT</version>
+	<version>1.0.5.1-SNAPSHOT</version>
 	<name>Virgil</name>
 	<url>http://maven.apache.org</url>
 
