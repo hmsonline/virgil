@@ -17,7 +17,7 @@ public class MarshallingTest
     {
         Column column = new Column(ByteBufferUtil.bytes("ADDR1"));
         column.setValue(ByteBufferUtil.bytes("1234 Fun St."));
-        column.setTimestamp(System.currentTimeMillis());
+        column.setTimestamp(System.currentTimeMillis() * 1000);
         ColumnOrSuperColumn col = new ColumnOrSuperColumn();
         col.setColumn(column);
         String json = JsonMarshaller.marshallColumn(col);
@@ -29,13 +29,13 @@ public class MarshallingTest
     {
         Column column1 = new Column(ByteBufferUtil.bytes("ADDR1"));
         column1.setValue(ByteBufferUtil.bytes("1234 Fun St."));
-        column1.setTimestamp(System.currentTimeMillis());
+        column1.setTimestamp(System.currentTimeMillis() * 1000);
         ColumnOrSuperColumn col1 = new ColumnOrSuperColumn();
         col1.setColumn(column1);
         
         Column column2 = new Column(ByteBufferUtil.bytes("CITY"));
         column2.setValue(ByteBufferUtil.bytes("Souderton."));
-        column2.setTimestamp(System.currentTimeMillis());
+        column2.setTimestamp(System.currentTimeMillis() * 1000);
         ColumnOrSuperColumn col2 = new ColumnOrSuperColumn();
         col2.setColumn(column2);
         

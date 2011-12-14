@@ -153,7 +153,7 @@ public class RubyMapReduce extends Configured implements Tool {
 			Column c = new Column();
 			c.setName(Arrays.copyOf(name.getBytes(), name.length()));
 			c.setValue(ByteBufferUtil.bytes(value.toString()));
-			c.setTimestamp(System.currentTimeMillis());
+			c.setTimestamp(System.currentTimeMillis() * 1000);
 
 			Mutation m = new Mutation();
 			m.setColumn_or_supercolumn(new ColumnOrSuperColumn());

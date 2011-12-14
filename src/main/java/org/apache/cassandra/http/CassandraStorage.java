@@ -111,7 +111,7 @@ public class CassandraStorage {
 
 	public void setColumn(String keyspace, String column_family, String key, JSONObject json,
 			ConsistencyLevel consistency_level, boolean index) throws Exception {
-		this.setColumn(keyspace, column_family, key, json, consistency_level, index, System.currentTimeMillis());
+		this.setColumn(keyspace, column_family, key, json, consistency_level, index, System.currentTimeMillis() * 1000);
 	}
 
 	public void setColumn(String keyspace, String column_family, String key, JSONObject json,
@@ -145,7 +145,7 @@ public class CassandraStorage {
 			ConsistencyLevel consistency_level, boolean purgeIndex) throws Exception {
 		ColumnPath path = new ColumnPath(column_family);
 		path.setColumn(ByteBufferUtil.bytes(column));
-		server.remove(ByteBufferUtil.bytes(key), path, System.currentTimeMillis(), consistency_level);
+		server.remove(ByteBufferUtil.bytes(key), path, System.currentTimeMillis() * 1000, consistency_level);
 
 		// TODO: Revisit deleting a single field because it requires a fetch
 		// first.
@@ -163,7 +163,7 @@ public class CassandraStorage {
 
 	public long deleteRow(String keyspace, String column_family, String key, ConsistencyLevel consistency_level,
 			boolean purgeIndex) throws Exception {
-		long deleteTime = System.currentTimeMillis();
+		long deleteTime = System.currentTimeMillis() * 1000;
 		ColumnPath path = new ColumnPath(column_family);
 		server.remove(ByteBufferUtil.bytes(key), path, deleteTime, consistency_level);
 
