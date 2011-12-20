@@ -21,4 +21,16 @@
 		</dependency>
 	</dependencies>
 
+        <build>
+                <plugins>
+                        <plugin>
+                                <groupId>com.github.maven-hadoop.plugin</groupId>
+                                <artifactId>maven-hadoop-plugin</artifactId>
+                                <version>0.20.1</version>
+                                <configuration>
+                                        <hadoopHome>${env.HADOOP_HOME}</hadoopHome>
+                                </configuration>
+                        </plugin>
+                </plugins>
+        </build>
 </project>
