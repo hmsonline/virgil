@@ -8,7 +8,7 @@ public class CassandraMapReduceTest {
 		@Test
 	public void testMapReduce() throws Exception {
 		String source = RubyInvokerTest.getSource(); 
-		RubyMapReduce.spawn("test-reduce", "localhost", 9160, "playground", "toys", "datastore", "test", source);
+		JobSpawner.spawn("test-reduce", "localhost", 9160, "playground", "toys", "datastore", "test", source);
 	}
 
 }
