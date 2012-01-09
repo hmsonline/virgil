@@ -17,7 +17,7 @@ public class RubyInvoker {
 
 	@SuppressWarnings("unchecked")
 	public static synchronized Map<String, Map<String, String>> invokeReduce(ScriptingContainer container,
-			Object rubyReceiver, String key, List<String> values) throws ScriptException {
+			Object rubyReceiver, String key, List<Object> values) throws ScriptException {
 		return (Map<String, Map<String, String>>) container.callMethod(rubyReceiver, "reduce", key, values);
 	}
 }

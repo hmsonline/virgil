@@ -38,7 +38,7 @@ public class RubyInvokerTest {
 		ScriptingContainer rubyContainer = new ScriptingContainer(LocalContextScope.CONCURRENT);
 		Object rubyReceiver = rubyContainer.runScriptlet(source);
 		String key = "fun";
-		List<String> values = new ArrayList<String>();
+		List<Object> values = new ArrayList<Object>();
 		values.add("1");
 		values.add("3");
 		values.add("5");

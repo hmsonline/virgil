@@ -20,6 +20,7 @@ import org.apache.cassandra.thrift.SlicePredicate;
 import org.apache.cassandra.thrift.SliceRange;
 import org.apache.cassandra.utils.ByteBufferUtil;
 import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.io.ObjectWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -45,7 +46,7 @@ public class RubyMapReduce extends Configured implements Tool {
 		job.setReducerClass(CassandraReducer.class);
 		job.setInputFormatClass(ColumnFamilyInputFormat.class);
 		job.setMapOutputKeyClass(Text.class);
-		job.setMapOutputValueClass(Text.class);
+		job.setMapOutputValueClass(ObjectWritable.class);
 
 		ConfigHelper.setRpcPort(job.getConfiguration(), getConf().get("cassandraPort"));
 		ConfigHelper.setInitialAddress(job.getConfiguration(), getConf().get("cassandraHost"));
@@ -66,7 +67,7 @@ public class RubyMapReduce extends Configured implements Tool {
 		return 0;
 	}
 
-	public static class CassandraMapper extends Mapper<ByteBuffer, SortedMap<ByteBuffer, IColumn>, Text, Text> {
+	public static class CassandraMapper extends Mapper<ByteBuffer, SortedMap<ByteBuffer, IColumn>, Text, ObjectWritable> {
 		private ScriptingContainer rubyContainer = null;
 		private Object rubyReceiver = null;
 		private static Logger logger = LoggerFactory.getLogger(CassandraMapper.class);
@@ -83,7 +84,7 @@ public class RubyMapReduce extends Configured implements Tool {
 				RubyArray tuples = RubyInvoker.invokeMap(rubyContainer, rubyReceiver, rowKey, columns);
 				for (Object element : tuples) {
 					RubyArray tuple = (RubyArray) element;
-					context.write(new Text((String) tuple.get(0)), new Text((String) tuple.get(1)));
+					context.write(new Text((String) tuple.get(0)), new ObjectWritable(tuple.get(1)));
 				}
 			} catch (Exception e) {
 				// TODO: Make this more severe.
@@ -99,15 +100,15 @@ public class RubyMapReduce extends Configured implements Tool {
 		}
 	}
 
-	public static class CassandraReducer extends Reducer<Text, Text, ByteBuffer, List<Mutation>> {
+	public static class CassandraReducer extends Reducer<Text, ObjectWritable, ByteBuffer, List<Mutation>> {
 		private ScriptingContainer rubyContainer = null;
 		private Object rubyReceiver = null;
 
 		@Override
-		protected void reduce(Text key, Iterable<Text> vals, Context context) throws IOException, InterruptedException {
-			List<String> values = new ArrayList<String>();
-			for (Text value : vals) {
-				values.add(value.toString());
+		protected void reduce(Text key, Iterable<ObjectWritable> vals, Context context) throws IOException, InterruptedException {
+			List<Object> values = new ArrayList<Object>();
+			for (ObjectWritable value : vals) {
+				values.add(value.get());
 			}
 			try {
 				Map<String, Map<String, String>> results = RubyInvoker.invokeReduce(rubyContainer, rubyReceiver,
