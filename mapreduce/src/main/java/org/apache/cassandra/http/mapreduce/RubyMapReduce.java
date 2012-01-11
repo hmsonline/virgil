@@ -29,6 +29,7 @@ import org.apache.hadoop.util.Tool;
 import org.jruby.RubyArray;
 import org.jruby.embed.LocalContextScope;
 import org.jruby.embed.ScriptingContainer;
+import org.json.simple.JSONValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,18 +71,19 @@ public class RubyMapReduce extends Configured implements Tool {
 	public static class CassandraMapper extends Mapper<ByteBuffer, SortedMap<ByteBuffer, IColumn>, Text, ObjectWritable> {
 		private ScriptingContainer rubyContainer = null;
 		private Object rubyReceiver = null;
+		private Map<String, Object> params;
 		private static Logger logger = LoggerFactory.getLogger(CassandraMapper.class);
 
-		@Override
+    @Override
 		protected void map(ByteBuffer key, SortedMap<ByteBuffer, IColumn> value, Context context) throws IOException,
-				InterruptedException {
+				InterruptedException {		
 			Map<String, String> columns = new HashMap<String, String>();
 			for (ByteBuffer b : value.keySet()) {
 				columns.put(ByteBufferUtil.string(b), ByteBufferUtil.string(value.get(b).value()));
 			}
 			String rowKey = ByteBufferUtil.string(key);
 			try {
-				RubyArray tuples = RubyInvoker.invokeMap(rubyContainer, rubyReceiver, rowKey, columns);
+				RubyArray tuples = RubyInvoker.invokeMap(rubyContainer, rubyReceiver, rowKey, columns, params);
 				for (Object element : tuples) {
 					RubyArray tuple = (RubyArray) element;
 					context.write(new Text((String) tuple.get(0)), new ObjectWritable(tuple.get(1)));
@@ -92,19 +94,25 @@ public class RubyMapReduce extends Configured implements Tool {
 			}
 		}
 
-		@Override
+    @SuppressWarnings("unchecked")
+	  @Override
 		protected void setup(Context context) throws IOException, InterruptedException {
 			String source = context.getConfiguration().get("source");
 			this.rubyContainer = new ScriptingContainer(LocalContextScope.CONCURRENT);
 			this.rubyReceiver = rubyContainer.runScriptlet(source);
+		  if (context.getConfiguration().get("params") != null) {
+        params = new HashMap<String, Object>();
+        params = (Map<String, Object>) JSONValue.parse(context.getConfiguration().get("params"));        
+      }
 		}
 	}
 
 	public static class CassandraReducer extends Reducer<Text, ObjectWritable, ByteBuffer, List<Mutation>> {
 		private ScriptingContainer rubyContainer = null;
 		private Object rubyReceiver = null;
+	  private Map<String, Object> params;
 
-		@Override
+    @Override
 		protected void reduce(Text key, Iterable<ObjectWritable> vals, Context context) throws IOException, InterruptedException {
 			List<Object> values = new ArrayList<Object>();
 			for (ObjectWritable value : vals) {
@@ -112,7 +120,7 @@ public class RubyMapReduce extends Configured implements Tool {
 			}
 			try {
 				Map<String, Map<String, String>> results = RubyInvoker.invokeReduce(rubyContainer, rubyReceiver,
-						key.toString(), values);
+						key.toString(), values, params);
 				for (String rowKey : results.keySet()) {
 					Map<String, String> columns = results.get(rowKey);
 					for (String columnName : columns.keySet()) {
@@ -126,12 +134,17 @@ public class RubyMapReduce extends Configured implements Tool {
 			}
 		}
 
-		@Override
+    @SuppressWarnings("unchecked")
+    @Override
 		protected void setup(Context context) throws IOException, InterruptedException {
-			String source = context.getConfiguration().get("source");
+   	String source = context.getConfiguration().get("source");
 			this.rubyContainer = new ScriptingContainer(LocalContextScope.CONCURRENT);
 			this.rubyReceiver = rubyContainer.runScriptlet(source);
-		}
+      if (context.getConfiguration().get("params") != null) {
+        params = new HashMap<String, Object>();
+        params = (Map<String, Object>) JSONValue.parse(context.getConfiguration().get("params"));
+      }
+    }
 
 		private static List<Mutation> getMutationList(String name, String value) {
 			Column c = new Column();

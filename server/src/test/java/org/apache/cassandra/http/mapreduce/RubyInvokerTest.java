@@ -14,10 +14,12 @@ import java.util.Map;
 import org.jruby.RubyArray;
 import org.jruby.embed.LocalContextScope;
 import org.jruby.embed.ScriptingContainer;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 import org.junit.Test;
 
 public class RubyInvokerTest {
-	@Test
+  @Test
 	public void testMapInvocation() throws Exception {
 		String source = getSource();
 		//System.out.println(source);
@@ -28,7 +30,7 @@ public class RubyInvokerTest {
 		columns.put("collin", "42");
 		columns.put("owen", "33");
 
-		RubyArray tuples = RubyInvoker.invokeMap(rubyContainer, rubyReceiver, "rockwall", columns);
+		RubyArray tuples = RubyInvoker.invokeMap(rubyContainer, rubyReceiver, "rockwall", columns, null);
 		assertEquals(2, tuples.size());
 	}
 
@@ -42,7 +44,7 @@ public class RubyInvokerTest {
 		values.add("1");
 		values.add("3");
 		values.add("5");
-		Map<String, Map<String, String>> results = RubyInvoker.invokeReduce(rubyContainer, rubyReceiver, key, values);
+		Map<String, Map<String, String>> results = RubyInvoker.invokeReduce(rubyContainer, rubyReceiver, key, values, null);
 		assertEquals(1, results.size());
 	}
 

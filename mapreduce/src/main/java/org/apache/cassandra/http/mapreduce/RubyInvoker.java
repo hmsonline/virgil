@@ -11,13 +11,25 @@ import org.jruby.embed.ScriptingContainer;
 public class RubyInvoker {
 
 	public static synchronized RubyArray invokeMap(ScriptingContainer container, Object rubyReceiver,
-			String rowKey, Map<String, String> columns) throws ScriptException {
-		return (RubyArray) container.callMethod(rubyReceiver, "map", rowKey, columns);
+			String rowKey, Map<String, String> columns, Map<String, Object>  params) throws ScriptException {
+	  //TODO- see if we can possibly deprecate the one without params
+	  if (params == null) {
+	    return (RubyArray) container.callMethod(rubyReceiver, "map", rowKey, columns);
+	  }
+	  else {
+	    return (RubyArray) container.callMethod(rubyReceiver, "map", rowKey, columns, params);  
+	  }		
 	}
 
 	@SuppressWarnings("unchecked")
 	public static synchronized Map<String, Map<String, String>> invokeReduce(ScriptingContainer container,
-			Object rubyReceiver, String key, List<Object> values) throws ScriptException {
-		return (Map<String, Map<String, String>>) container.callMethod(rubyReceiver, "reduce", key, values);
+			Object rubyReceiver, String key, List<Object> values, Map<String, Object>  params) throws ScriptException {
+	  //TODO- see if we can possibly deprecate the one without params
+	  if (params == null) {
+	    return (Map<String, Map<String, String>>) container.callMethod(rubyReceiver, "reduce", key, values);
+	  }
+	  else {
+	    return (Map<String, Map<String, String>>) container.callMethod(rubyReceiver, "reduce", key, values, params);
+	  }
 	}
 }

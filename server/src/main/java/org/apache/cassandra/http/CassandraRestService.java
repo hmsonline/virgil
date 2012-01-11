@@ -281,7 +281,9 @@ public class CassandraRestService {
 	@POST
 	@Path("/job")
 	@Produces({ "text/plain" })
-	public void mapReduce(@QueryParam("jobName") String jobName,
+	public void mapReduce(
+	    @QueryParam("params") String params,
+	    @QueryParam("jobName") String jobName,
 			@QueryParam("inputKeyspace") String inputKeyspace,
 			@QueryParam("inputColumnFamily") String inputColumnFamily,
 			@QueryParam("outputKeyspace") String outputKeyspace,
@@ -304,6 +306,6 @@ public class CassandraRestService {
 		// System.out.println(source);
 
 		JobSpawner.spawn(jobName, VirgilConfig.getCassandraHost(), VirgilConfig.getCassandraPort(),
-				inputKeyspace, inputColumnFamily, outputKeyspace, outputColumnFamily, source);
+				inputKeyspace, inputColumnFamily, outputKeyspace, outputColumnFamily, source, params);
 	}
 }
