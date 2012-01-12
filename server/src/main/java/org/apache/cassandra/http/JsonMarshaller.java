@@ -24,17 +24,17 @@ public class JsonMarshaller {
 	}
 
 	@SuppressWarnings("unchecked")
-	public static String marshallSlice(List<ColumnOrSuperColumn> slice) throws UnsupportedEncodingException {
+	public static JSONObject marshallSlice(List<ColumnOrSuperColumn> slice) throws UnsupportedEncodingException {
 		JSONObject json = new JSONObject();
 		for (ColumnOrSuperColumn column : slice) {
 			Column c = column.getColumn();
 			json.put(string(c.getName()), string(c.getValue()));
 		}
-		return json.toString();
+		return json;
 	}
 
 	@SuppressWarnings("unchecked")
-	public static String marshallRows(List<KeySlice> rows, boolean flatten) throws Exception {
+	public static JSONArray marshallRows(List<KeySlice> rows, boolean flatten) throws Exception {
 		if (flatten){
 			JSONArray cfJson = new JSONArray();
 			for (KeySlice row : rows){
@@ -55,7 +55,7 @@ public class JsonMarshaller {
 					cfJson.add(rowJson);
 				}
 			}
-			return cfJson.toString();
+			return cfJson;
 		} else {
 			throw new RuntimeException("Virgil does not support hiearchical fetch of column family yet.");
 		}		
@@ -92,8 +92,6 @@ public class JsonMarshaller {
 		}
 		return keyspaceJson;
 	}
-
-	
 	
 	private static String string(byte[] bytes) throws UnsupportedEncodingException {
 		return new String(bytes, "UTF8");

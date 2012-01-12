@@ -8,6 +8,7 @@ import java.util.List;
 import org.apache.cassandra.thrift.Column;
 import org.apache.cassandra.thrift.ColumnOrSuperColumn;
 import org.apache.cassandra.utils.ByteBufferUtil;
+import org.json.simple.JSONObject;
 import org.junit.Test;
 
 public class MarshallingTest
@@ -43,7 +44,7 @@ public class MarshallingTest
         slice.add(col1);
         slice.add(col2);
         
-        String json = JsonMarshaller.marshallSlice(slice);
+        JSONObject json = JsonMarshaller.marshallSlice(slice);
         assertEquals("{\"ADDR1\":\"1234 Fun St.\",\"CITY\":\"Souderton.\"}", json);
     }
 }

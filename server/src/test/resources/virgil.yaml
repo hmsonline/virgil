@@ -25,7 +25,7 @@ http:
   adminPort: 8081
 
   # The root path used for services.
-  rootPath: /services/*
+  rootPath: /virgil/*
 
   # Maximum number of threads.
   maxThreads: 100

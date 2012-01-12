@@ -14,7 +14,7 @@ Ext.onReady(function() {
         fields: ['row', 'column', 'value'],
         proxy: {
             type: 'ajax',
-            url: '/services/virgil/data/system/Versions/'
+            url: '/virgil/data/system/Versions/'
         }
     });
 
@@ -65,7 +65,7 @@ Ext.onReady(function() {
         fields: ['keyspace', 'columnFamily'],
         proxy: {
             type: 'rest',
-            url: '/services/virgil/data/'
+            url: '/virgil/data/'
         }
     });
 
@@ -100,7 +100,7 @@ Ext.onReady(function() {
         }],
         listeners: {
             itemclick: function(vie, record) {
-				cfUrl = "/services/virgil/data/" + record.raw["keyspace"] + "/" + record.raw["columnFamily"] + "/"
+				cfUrl = "/virgil/data/" + record.raw["keyspace"] + "/" + record.raw["columnFamily"] + "/"
                 console.info("Fetching [" + cfUrl + "]");
 				ColumnFamily.proxy.url = cfUrl;
 				columnFamily.load();

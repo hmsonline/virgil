@@ -119,8 +119,7 @@ public class CassandraStorage {
 		// TODO: Revisit adding a single field because it requires a fetch
 		// first.
 		if (this.config.isIndexingEnabled() && index) {
-			String doc = this.getSlice(keyspace, column_family, rowkey, consistency_level);
-			JSONObject indexJson = (JSONObject) JSONValue.parse(doc);
+		    JSONObject indexJson = this.getSlice(keyspace, column_family, rowkey, consistency_level);
 			indexJson.put(column_name, value);
 			indexer.index(column_family, rowkey, indexJson);
 		}
@@ -170,9 +169,8 @@ public class CassandraStorage {
 		// SOLR
 		// http://stackoverflow.com/questions/4802620/can-you-delete-a-field-from-a-document-in-solr-index
 		if (config.isIndexingEnabled() && purgeIndex) {
-			String doc = this.getSlice(keyspace, column_family, key, consistency_level);
 			indexer.delete(column_family, key);
-			JSONObject json = (JSONObject) JSONValue.parse(doc);
+			JSONObject json = this.getSlice(keyspace, column_family, key, consistency_level);
 			json.remove(column);
 			indexer.index(column_family, key, json);
 		}
@@ -199,7 +197,7 @@ public class CassandraStorage {
 		return new String(column_result.getColumn().getValue(), "UTF8");
 	}
 
-	public String getRows(String columnFamily, ConsistencyLevel consistencyLevel) throws Exception {
+	public JSONArray getRows(String columnFamily, ConsistencyLevel consistencyLevel) throws Exception {
 		SlicePredicate predicate = new SlicePredicate();
 		SliceRange range = new SliceRange(ByteBufferUtil.bytes(""), ByteBufferUtil.bytes(""), false, MAX_COLUMNS);
 		predicate.setSlice_range(range);
@@ -212,7 +210,7 @@ public class CassandraStorage {
 		return JsonMarshaller.marshallRows(rows, true);
 	}
 	
-	public String getSlice(String keyspace, String columnFamily, String key, ConsistencyLevel consistencyLevel)
+	public JSONObject getSlice(String keyspace, String columnFamily, String key, ConsistencyLevel consistencyLevel)
 			throws Exception {
 		SlicePredicate predicate = new SlicePredicate();
 		SliceRange range = new SliceRange(ByteBufferUtil.bytes(""), ByteBufferUtil.bytes(""), false, MAX_COLUMNS);
