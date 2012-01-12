@@ -42,7 +42,6 @@ import org.apache.cassandra.thrift.SliceRange;
 import org.apache.cassandra.utils.ByteBufferUtil;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
 
 public class CassandraStorage {
 	private static final int MAX_COLUMNS = 1000;
