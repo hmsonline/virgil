@@ -21,7 +21,7 @@ public class JobSpawner {
 	public static final int INPUT_COLUMN_FAMILY = 6;
 	public static final int OUTPUT_KEYSPACE = 7;
 	public static final int OUTPUT_COLUMN_FAMILY = 8;
-	public static final int SOURCE = 8;
+	public static final int SOURCE = 9;
 
 	private static String[] getArgs(String jobName, String cassandraHost, int cassandraPort, String inputKeyspace,
 			String inputColumnFamily, String outputKeyspace, String outputColumnFamily, String source){
@@ -56,7 +56,9 @@ public class JobSpawner {
 		if (StringUtils.isNotBlank(params)) {
 		  conf.set("params", params);
 		}
-		ToolRunner.run(conf, new RubyMapReduce(), null);
+        String[] args = JobSpawner.getArgs(jobName, cassandraHost, cassandraPort, inputKeyspace, inputColumnFamily, 
+                outputKeyspace, outputColumnFamily, source);
+		ToolRunner.run(conf, new RubyMapReduce(), args);
 	}
 	
 	public static void spawnRemote(String jobName, String cassandraHost, int cassandraPort, String inputKeyspace,

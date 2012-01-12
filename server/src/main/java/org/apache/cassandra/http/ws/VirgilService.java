@@ -4,6 +4,7 @@ import org.apache.cassandra.http.CassandraStorage;
 import org.apache.cassandra.http.cli.VirgilCommand;
 import org.apache.cassandra.http.config.VirgilConfiguration;
 import org.apache.cassandra.http.resource.DataResource;
+import org.apache.cassandra.http.resource.MapReduceResource;
 
 import com.yammer.dropwizard.Service;
 import com.yammer.dropwizard.bundles.AssetsBundle;
@@ -26,6 +27,7 @@ public class VirgilService extends Service<VirgilConfiguration> {
 	@Override
 	protected void initialize(VirgilConfiguration conf, Environment env)
 			throws Exception {		
+        env.addResource(new MapReduceResource(this));
 		env.addResource(new DataResource(this));
 	}
 
