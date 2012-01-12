@@ -22,14 +22,14 @@ import org.json.simple.JSONValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Path("/virgil/")
-public class RestResource {
-	private static Logger logger = LoggerFactory.getLogger(RestResource.class);
+@Path("/data/")
+public class DataResource {
+	private static Logger logger = LoggerFactory.getLogger(DataResource.class);
 	private VirgilService virgilService = null;
 	private VirgilConfiguration config = null;
 	public static final String CONSISTENCY_LEVEL_HEADER = "X-Consistency-Level";
 
-	public RestResource(VirgilService virgilService) {
+	public DataResource(VirgilService virgilService) {
 		this.virgilService = virgilService;
 		this.config = virgilService.getConfig();
 	}
@@ -52,7 +52,7 @@ public class RestResource {
 	// Key Space Operations
 	// ================================================================================================================
 	@GET
-	@Path("/data/")
+	@Path("/")
 	@Produces({ "application/json" })
 	public JSONArray getKeyspaces(@PathParam("keyspace") String keyspace) throws Exception {
 		if (logger.isDebugEnabled())
@@ -61,7 +61,7 @@ public class RestResource {
 	}
 
 	@PUT
-	@Path("/data/{keyspace}")
+	@Path("/{keyspace}")
 	@Produces({ "application/json" })
 	public void createKeyspace(@PathParam("keyspace") String keyspace) throws Exception {
 		if (logger.isDebugEnabled())
@@ -70,7 +70,7 @@ public class RestResource {
 	}
 
 	@DELETE
-	@Path("/data/{keyspace}")
+	@Path("/{keyspace}")
 	@Produces({ "application/json" })
 	public void dropKeyspace(@PathParam("keyspace") String keyspace) throws Exception {
 		if (logger.isDebugEnabled())
@@ -82,9 +82,9 @@ public class RestResource {
 	// Column Family Operations
 	// ================================================================================================================
 	@GET
-	@Path("/data/{keyspace}/{columnFamily}")
+	@Path("/{keyspace}/{columnFamily}")
 	@Produces({ "application/json" })
-	public String getColumnFamily(@PathParam("keyspace") String keyspace,
+	public JSONArray getColumnFamily(@PathParam("keyspace") String keyspace,
 			@PathParam("columnFamily") String columnFamily,
 			@HeaderParam(CONSISTENCY_LEVEL_HEADER) String consistencyLevel) throws Exception {
 		if (logger.isDebugEnabled())
@@ -100,7 +100,7 @@ public class RestResource {
 	 * Adds or updates rows in the column family.
 	 */
 	@PATCH
-	@Path("/data/{keyspace}/{columnFamily}")
+	@Path("/{keyspace}/{columnFamily}")
 	@Produces({ "application/json" })
 	public void patchColumnFamily(@PathParam("keyspace") String keyspace,
 			@PathParam("columnFamily") String columnFamily, @QueryParam("index") boolean index, String body,
@@ -125,7 +125,7 @@ public class RestResource {
 	}
 
 	@PUT
-	@Path("/data/{keyspace}/{columnFamily}")
+	@Path("/{keyspace}/{columnFamily}")
 	@Produces({ "application/json" })
 	public void createColumnFamily(@PathParam("keyspace") String keyspace,
 			@PathParam("columnFamily") String columnFamily) throws Exception {
@@ -136,7 +136,7 @@ public class RestResource {
 	}
 
 	@DELETE
-	@Path("/data/{keyspace}/{columnFamily}")
+	@Path("/{keyspace}/{columnFamily}")
 	@Produces({ "application/json" })
 	public void deleteColumnFamily(@PathParam("keyspace") String keyspace,
 			@PathParam("columnFamily") String columnFamily) throws Exception {
@@ -153,7 +153,7 @@ public class RestResource {
 	 * Adds or appends to a row, each entry in the JSON map is a column
 	 */
 	@PATCH
-	@Path("/data/{keyspace}/{columnFamily}/{key}")
+	@Path("/{keyspace}/{columnFamily}/{key}")
 	@Produces({ "application/json" })
 	public void patchRow(@PathParam("keyspace") String keyspace, @PathParam("columnFamily") String columnFamily,
 			@PathParam("key") String key, @QueryParam("index") boolean index, String body,
@@ -174,7 +174,7 @@ public class RestResource {
 	 * Add or replaces a row, each entry in the JSON map is a column
 	 */
 	@PUT
-	@Path("/data/{keyspace}/{columnFamily}/{key}")
+	@Path("/{keyspace}/{columnFamily}/{key}")
 	@Produces({ "application/json" })
 	public void setRow(@PathParam("keyspace") String keyspace, @PathParam("columnFamily") String columnFamily,
 			@PathParam("key") String key, @QueryParam("index") boolean index, String body,
@@ -199,9 +199,9 @@ public class RestResource {
 	 * Fetches a row
 	 */
 	@GET
-	@Path("/data/{keyspace}/{columnFamily}/{key}")
+	@Path("/{keyspace}/{columnFamily}/{key}")
 	@Produces({ "application/json" })
-	public String getRow(@PathParam("keyspace") String keyspace, @PathParam("columnFamily") String columnFamily,
+	public JSONObject getRow(@PathParam("keyspace") String keyspace, @PathParam("columnFamily") String columnFamily,
 			@PathParam("key") String key, @HeaderParam(CONSISTENCY_LEVEL_HEADER) String consistencyLevel)
 			throws Exception {
 		getCassandraStorage().setKeyspace(keyspace);
@@ -216,7 +216,7 @@ public class RestResource {
 	 * Deletes a row
 	 */
 	@DELETE
-	@Path("/data/{keyspace}/{columnFamily}/{key}")
+	@Path("/{keyspace}/{columnFamily}/{key}")
 	@Produces({ "application/json" })
 	public long deleteRow(@PathParam("keyspace") String keyspace, @PathParam("columnFamily") String columnFamily,
 			@PathParam("key") String key, @QueryParam("purgeIndex") boolean purgeIndex,
@@ -237,7 +237,7 @@ public class RestResource {
 	 * Fetches a column
 	 */
 	@GET
-	@Path("/data/{keyspace}/{columnFamily}/{key}/{columnName}")
+	@Path("/{keyspace}/{columnFamily}/{key}/{columnName}")
 	public String getColumn(@PathParam("keyspace") String keyspace, @PathParam("columnFamily") String columnFamily,
 			@PathParam("key") String key, @PathParam("columnName") String columnName,
 			@HeaderParam(CONSISTENCY_LEVEL_HEADER) String consistencyLevel) throws Exception {
@@ -253,7 +253,7 @@ public class RestResource {
 	 * Adds a column
 	 */
 	@PUT
-	@Path("/data/{keyspace}/{columnFamily}/{key}/{columnName}")
+	@Path("/{keyspace}/{columnFamily}/{key}/{columnName}")
 	@Produces({ "application/json" })
 	public void addColumn(@PathParam("keyspace") String keyspace, @PathParam("columnFamily") String columnFamily,
 			@PathParam("key") String key, @PathParam("columnName") String columnName,
@@ -270,7 +270,7 @@ public class RestResource {
 	 * Deletes a column
 	 */
 	@DELETE
-	@Path("/data/{keyspace}/{columnFamily}/{key}/{columnName}")
+	@Path("/{keyspace}/{columnFamily}/{key}/{columnName}")
 	@Produces({ "application/json" })
 	public void deleteColumn(@PathParam("keyspace") String keyspace, @PathParam("columnFamily") String columnFamily,
 			@PathParam("key") String key, @PathParam("columnName") String columnName,
