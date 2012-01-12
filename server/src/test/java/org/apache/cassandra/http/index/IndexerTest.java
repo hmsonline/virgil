@@ -10,7 +10,7 @@ public class IndexerTest {
 
 	@Test
 	public void testIndexing() throws Exception {
-		Indexer indexer = new SolrIndexer();
+		Indexer indexer = new SolrIndexer(null);
 		String json = "{\"ADDR1\":\"1234 Collin St.\",\"CITY\":\"Souderton\"}";
 		indexer.index(COLUMN_FAMILY, KEY, json);
 

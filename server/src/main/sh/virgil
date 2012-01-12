@@ -23,6 +23,11 @@ for jar in $cwd/../lib/*.jar; do
     CLASSPATH=$CLASSPATH:$jar
 done
 
+# mapreduce jars.
+for jar in $cwd/../mapreduce/jars/*.jar; do
+    CLASSPATH=$CLASSPATH:$jar
+done
+
 # Use JAVA_HOME if set, otherwise look for java in PATH
 if [ -x $JAVA_HOME/bin/java ]; then
     JAVA=$JAVA_HOME/bin/java
@@ -30,6 +35,6 @@ else
     JAVA=`which java`
 fi
 
-CLASSPATH=$CLASSPATH:$cwd/../conf/
+CLASSPATH=$CLASSPATH:$cwd/../conf/;$cwd/../mapreduce/conf/
 
 $JAVA -cp $CLASSPATH org.apache.cassandra.http.HttpDaemon $@

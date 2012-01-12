@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.cassandra.http.config.VirgilConfiguration;
 import org.apache.cassandra.http.index.Indexer;
 import org.apache.cassandra.thrift.Cassandra;
 import org.apache.cassandra.thrift.CfDef;
@@ -39,6 +40,7 @@ import org.apache.cassandra.thrift.Mutation;
 import org.apache.cassandra.thrift.SlicePredicate;
 import org.apache.cassandra.thrift.SliceRange;
 import org.apache.cassandra.utils.ByteBufferUtil;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
@@ -47,11 +49,26 @@ public class CassandraStorage {
 	private static final int MAX_ROWS = 20;
 	private static Cassandra.Iface server = null;
 	private Indexer indexer = null;
+	private VirgilConfiguration config = null;
+	private String host = null;
+	private int port;
 
 	// TODO: Come back and make indexing AOP
-	public CassandraStorage(Indexer indexer, Cassandra.Iface server) {
+	public CassandraStorage(String host, int port, 
+			VirgilConfiguration config, Indexer indexer, Cassandra.Iface server) {
 		this.indexer = indexer;
 		CassandraStorage.server = server;
+		this.config = config;
+		this.host = host;
+		this.port = port;
+	}
+
+	public String getHost() {
+		return host;
+	}
+
+	public int getPort() {
+		return port;
 	}
 
 	/*
@@ -61,7 +78,7 @@ public class CassandraStorage {
 		server.set_keyspace(keyspace);
 	}
 
-	public String getKeyspaces() throws Exception {
+	public JSONArray getKeyspaces() throws Exception {
 		List<KsDef> keyspaces = server.describe_keyspaces();
 		return JsonMarshaller.marshallKeyspaces(keyspaces, true);
 	}
@@ -101,7 +118,7 @@ public class CassandraStorage {
 
 		// TODO: Revisit adding a single field because it requires a fetch
 		// first.
-		if (VirgilConfig.isIndexingEnabled() && index) {
+		if (this.config.isIndexingEnabled() && index) {
 			String doc = this.getSlice(keyspace, column_family, rowkey, consistency_level);
 			JSONObject indexJson = (JSONObject) JSONValue.parse(doc);
 			indexJson.put(column_name, value);
@@ -137,7 +154,7 @@ public class CassandraStorage {
 		mutationMap.put(ByteBufferUtil.bytes(key), cfMutations);
 		server.batch_mutate(mutationMap, consistency_level);
 
-		if (VirgilConfig.isIndexingEnabled() && index)
+		if (config.isIndexingEnabled() && index)
 			indexer.index(column_family, key, json);
 	}
 
@@ -152,7 +169,7 @@ public class CassandraStorage {
 		// Evidently it is impossible to remove just a field from a document in
 		// SOLR
 		// http://stackoverflow.com/questions/4802620/can-you-delete-a-field-from-a-document-in-solr-index
-		if (VirgilConfig.isIndexingEnabled() && purgeIndex) {
+		if (config.isIndexingEnabled() && purgeIndex) {
 			String doc = this.getSlice(keyspace, column_family, key, consistency_level);
 			indexer.delete(column_family, key);
 			JSONObject json = (JSONObject) JSONValue.parse(doc);
@@ -168,7 +185,7 @@ public class CassandraStorage {
 		server.remove(ByteBufferUtil.bytes(key), path, deleteTime, consistency_level);
 
 		// Update Index
-		if (VirgilConfig.isIndexingEnabled() && purgeIndex) {
+		if (config.isIndexingEnabled() && purgeIndex) {
 			indexer.delete(column_family, key);
 		}
 		return deleteTime;
@@ -208,4 +225,6 @@ public class CassandraStorage {
 		else
 			return null;
 	}
+	
+	
 }

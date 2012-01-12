@@ -38,10 +38,10 @@ import org.slf4j.LoggerFactory;
  */
 public class RubyMapReduce extends Configured implements Tool {
 	private static int MAX_COLUMNS_PER_ROW = 1000;
-
+	
 	@Override
 	public int run(String[] args) throws Exception {
-		Job job = new Job(getConf(), getConf().get("jobName"));
+		Job job = new Job(getConf(), args[JobSpawner.JOB_NAME]);
 		job.setJarByClass(RubyMapReduce.class);
 		job.setMapperClass(CassandraMapper.class);
 		job.setReducerClass(CassandraReducer.class);
@@ -49,21 +49,18 @@ public class RubyMapReduce extends Configured implements Tool {
 		job.setMapOutputKeyClass(Text.class);
 		job.setMapOutputValueClass(ObjectWritable.class);
 
-		ConfigHelper.setRpcPort(job.getConfiguration(), getConf().get("cassandraPort"));
-		ConfigHelper.setInitialAddress(job.getConfiguration(), getConf().get("cassandraHost"));
 		ConfigHelper.setPartitioner(job.getConfiguration(), "org.apache.cassandra.dht.RandomPartitioner");
-		ConfigHelper.setInputColumnFamily(job.getConfiguration(), getConf().get("inputKeyspace"),
-				getConf().get("inputColumnFamily"));
-
-		ConfigHelper.setOutputColumnFamily(job.getConfiguration(), getConf().get("outputKeyspace"),
-				getConf().get("outputColumnFamily"));
+		ConfigHelper.setInitialAddress(job.getConfiguration(), args[JobSpawner.CASSANDRA_HOST]);
+		ConfigHelper.setRpcPort(job.getConfiguration(), args[JobSpawner.CASSANDRA_PORT]);
+		
+		ConfigHelper.setInputColumnFamily(job.getConfiguration(), args[JobSpawner.INPUT_KEYSPACE], args[JobSpawner.INPUT_COLUMN_FAMILY]);
+		ConfigHelper.setOutputColumnFamily(job.getConfiguration(), args[JobSpawner.OUTPUT_KEYSPACE], args[JobSpawner.OUTPUT_COLUMN_FAMILY]);
+		job.getConfiguration().set("source", args[JobSpawner.SOURCE]);
 		job.setOutputFormatClass(ColumnFamilyOutputFormat.class);
 		SlicePredicate sp = new SlicePredicate();
-		SliceRange sr = new SliceRange(ByteBufferUtil.EMPTY_BYTE_BUFFER, ByteBufferUtil.EMPTY_BYTE_BUFFER, false,
-				MAX_COLUMNS_PER_ROW);
+		SliceRange sr = new SliceRange(ByteBufferUtil.EMPTY_BYTE_BUFFER, ByteBufferUtil.EMPTY_BYTE_BUFFER, false, MAX_COLUMNS_PER_ROW);
 		sp.setSlice_range(sr);
 		ConfigHelper.setInputSlicePredicate(job.getConfiguration(), sp);
-
 		job.waitForCompletion(true);
 		return 0;
 	}

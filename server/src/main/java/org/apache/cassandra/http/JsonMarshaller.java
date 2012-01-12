@@ -62,7 +62,7 @@ public class JsonMarshaller {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static String marshallKeyspaces(List<KsDef> keyspaces, boolean flatten) throws UnsupportedEncodingException {
+	public static JSONArray marshallKeyspaces(List<KsDef> keyspaces, boolean flatten) throws UnsupportedEncodingException {
 		JSONArray keyspaceJson = new JSONArray();
 		if (flatten) {
 			for (KsDef keyspace : keyspaces) {
@@ -90,7 +90,7 @@ public class JsonMarshaller {
 				keyspaceJson.add(json);
 			}
 		}
-		return keyspaceJson.toString();
+		return keyspaceJson;
 	}
 
 	

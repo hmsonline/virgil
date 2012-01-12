@@ -3,6 +3,7 @@ package org.apache.cassandra.http;
 import static org.junit.Assert.assertEquals;
 
 import org.apache.cassandra.http.ext.PatchMethod;
+import org.apache.cassandra.http.ws.VirgilService;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.methods.DeleteMethod;
@@ -10,7 +11,6 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -26,12 +26,7 @@ public class HttpTest {
 
 	@BeforeClass
 	public static void setup() throws Exception {
-		HttpDaemon.main(new String[] { "-e", "-yaml", "cassandra_test.yaml" });
-	}
-
-	@AfterClass
-	public static void teardown() throws Exception {
-		HttpDaemon.shutdown();
+		VirgilService.main(new String[] { "-e", "-yaml", "cassandra_test.yaml" });
 	}
 
 	@Test

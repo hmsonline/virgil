@@ -1,6 +1,6 @@
 package org.apache.cassandra.http.index;
 
-import org.apache.cassandra.http.VirgilConfig;
+import org.apache.cassandra.http.config.VirgilConfiguration;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
@@ -17,8 +17,8 @@ public class SolrIndexer implements Indexer {
 	public static String DYNAMIC_FIELD_SUFFIX = "_t";
 	private String solrUrl = null;
 
-	public SolrIndexer() {
-		solrUrl = VirgilConfig.getValue(SOLR_CONFIG_PARAM);
+	public SolrIndexer(VirgilConfiguration config) {
+		solrUrl = config.getSolrHost();
 	}
 
 	@Override

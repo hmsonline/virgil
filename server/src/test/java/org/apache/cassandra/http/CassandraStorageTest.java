@@ -3,10 +3,10 @@ package org.apache.cassandra.http;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import org.apache.cassandra.http.ws.VirgilService;
 import org.apache.cassandra.thrift.ConsistencyLevel;
 import org.apache.cassandra.thrift.InvalidRequestException;
 import org.json.simple.JSONObject;
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -17,19 +17,14 @@ public class CassandraStorageTest {
 
 	@BeforeClass
 	public static void setup() throws Exception {
-		HttpDaemon.main(new String[] { "-e", "-yaml", "cassandra_test.yaml" });
+		VirgilService.main(new String[] { "-e", "-yaml", "cassandra_test.yaml" });
 		Thread.sleep(2000);
-	}
-
-	@AfterClass
-	public static void teardown() throws Exception {
-		HttpDaemon.shutdown();
 	}
 
 	@SuppressWarnings("unchecked")
 	@Test
 	public void testDatabaseServices() throws Exception {
-		CassandraStorage dataService = HttpDaemon.getDataService();
+		CassandraStorage dataService = VirgilService.storage;
 		JSONObject slice = new JSONObject();
 		slice.put("FIRST_NAME", "John");
 		slice.put("LAST_NAME", "Smith");
