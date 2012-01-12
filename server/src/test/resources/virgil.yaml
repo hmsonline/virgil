@@ -6,7 +6,7 @@
 # solr_host points to the SOLR instance to use for indxing.
 # =========================================================================================================
 solrHost: http://localhost:8983/solr/
-enableIndexing: false	
+enableIndexing: false
 
 # =========================================================================================================
 # Cassandra
