@@ -19,10 +19,10 @@ cassandraYaml: cassandra_test.yaml
 http:
 
   # The port on which the HTTP server listens for service requests.
-  port: 9090
+  port: 8080
 
   # The port on which the HTTP server listens for administrative requests.
-  adminPort: 9091
+  adminPort: 8081
 
   # The root path used for services.
   rootPath: /services/*
