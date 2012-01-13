@@ -52,9 +52,14 @@ public class MapReduceResource {
 		if (remote) {
 			
 		} else {
-			JobSpawner.spawnLocal(jobName, this.getCassandraStorage().getHost(), 
-					this.getCassandraStorage().getPort(), inputKeyspace,
-					inputColumnFamily, outputKeyspace, outputColumnFamily, source, params);
+			try {
+                JobSpawner.spawnRemote(jobName, this.getCassandraStorage().getHost(), 
+                		this.getCassandraStorage().getPort(), inputKeyspace,
+                		inputColumnFamily, outputKeyspace, outputColumnFamily, source, params);
+            } catch (Throwable e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
 		}
 	}
 	
