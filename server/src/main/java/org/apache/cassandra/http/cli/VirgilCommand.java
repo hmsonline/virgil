@@ -67,7 +67,7 @@ public class VirgilCommand extends ServerCommand<VirgilConfiguration> {
 			System.setProperty(VirgilConfiguration.CASSANDRA_PORT_PROPERTY, "9160");
 			System.setProperty(VirgilConfiguration.CASSANDRA_HOST_PROPERTY, "localhost");
 			CassandraDaemon.main(null);
-			return new CassandraStorage("localhost", 9160, config, indexer, new CassandraServer());
+			return new CassandraStorage("localhost", 9160, config, indexer, true);
 		} else {
 			String cassandraHost = params.getOptionValue("host");
 			if (cassandraHost == null)
@@ -77,14 +77,9 @@ public class VirgilCommand extends ServerCommand<VirgilConfiguration> {
 			if (cassandraPort == null)
 				cassandraPort = "9160";
 			System.setProperty(VirgilConfiguration.CASSANDRA_PORT_PROPERTY, cassandraPort);
-
 			System.out.println("Starting virgil against remote cassandra server [" + cassandraHost + ":"
 					+ cassandraPort + "]");
-			TTransport tr = new TFramedTransport(new TSocket(cassandraHost, Integer.parseInt(cassandraPort)));
-			TProtocol proto = new TBinaryProtocol(tr);
-			tr.open();
-			Cassandra.Client client = new Cassandra.Client(proto);
-			return new CassandraStorage(cassandraHost, Integer.parseInt(cassandraPort), config, indexer, client);
+			return new CassandraStorage(cassandraHost, Integer.parseInt(cassandraPort), config, indexer, false);
 		}
 	}
 

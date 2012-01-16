@@ -23,6 +23,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.io.ObjectWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -54,7 +55,9 @@ public class RubyMapReduce extends Configured implements Tool {
     @Override
     public int run(String[] args) throws Exception {
         Job job = new Job(getConf(), getConf().get("jobName"));
+        
         job.setJarByClass(RubyMapReduce.class);
+        ((JobConf) job.getConfiguration()).setJar("mapreduce/jars/virgil-mapreduce-hdeploy.jar");
         job.setMapperClass(CassandraMapper.class);
         job.setReducerClass(CassandraReducer.class);
         job.setInputFormatClass(ColumnFamilyInputFormat.class);

@@ -43,7 +43,6 @@ public class DataResource {
 	public String healthCheck() throws Exception {
 		if (logger.isDebugEnabled())
 			logger.debug("Ping.");
-		getCassandraStorage().setKeyspace("system");
 		getCassandraStorage().getSlice("system", "Versions", "build", ConsistencyLevel.ONE);
 		return "OK\n";
 	}
@@ -54,7 +53,7 @@ public class DataResource {
 	@GET
 	@Path("/")
 	@Produces({ "application/json" })
-	public JSONArray getKeyspaces(@PathParam("keyspace") String keyspace) throws Exception {
+	public JSONArray getKeyspaces() throws Exception {
 		if (logger.isDebugEnabled())
 			logger.debug("Listing keyspaces.");
 		return getCassandraStorage().getKeyspaces();
@@ -88,12 +87,11 @@ public class DataResource {
 			@PathParam("columnFamily") String columnFamily,
 			@HeaderParam(CONSISTENCY_LEVEL_HEADER) String consistencyLevel) throws Exception {
 		if (logger.isDebugEnabled())
-			logger.debug("Creating column family [" + keyspace + "]:[" + columnFamily + "]");
-		getCassandraStorage().setKeyspace(keyspace);
+			logger.debug("Listing column family [" + keyspace + "]:[" + columnFamily + "]");
 		logger.debug("STORAGE [" + getCassandraStorage() + "]");
 		logger.debug("CONFG [" +config + "]");
 		
-		return getCassandraStorage().getRows(columnFamily, config.getConsistencyLevel(consistencyLevel));
+		return getCassandraStorage().getRows(keyspace, columnFamily, config.getConsistencyLevel(consistencyLevel));
 	}
 
 	/*
@@ -105,7 +103,6 @@ public class DataResource {
 	public void patchColumnFamily(@PathParam("keyspace") String keyspace,
 			@PathParam("columnFamily") String columnFamily, @QueryParam("index") boolean index, String body,
 			@HeaderParam(CONSISTENCY_LEVEL_HEADER) String consistencyLevel) throws Exception {
-		getCassandraStorage().setKeyspace(keyspace);
 		JSONObject json = (JSONObject) JSONValue.parse(body);
 
 		if (json == null)
@@ -131,7 +128,6 @@ public class DataResource {
 			@PathParam("columnFamily") String columnFamily) throws Exception {
 		if (logger.isDebugEnabled())
 			logger.debug("Creating column family [" + keyspace + "]:[" + columnFamily + "]");
-		getCassandraStorage().setKeyspace(keyspace);
 		getCassandraStorage().createColumnFamily(keyspace, columnFamily);
 	}
 
@@ -142,8 +138,7 @@ public class DataResource {
 			@PathParam("columnFamily") String columnFamily) throws Exception {
 		if (logger.isDebugEnabled())
 			logger.debug("Deleteing column family [" + keyspace + "]:[" + columnFamily + "]");
-		getCassandraStorage().setKeyspace(keyspace);
-		getCassandraStorage().dropColumnFamily(columnFamily);
+		getCassandraStorage().dropColumnFamily(keyspace, columnFamily);
 	}
 
 	// ================================================================================================================
@@ -158,7 +153,6 @@ public class DataResource {
 	public void patchRow(@PathParam("keyspace") String keyspace, @PathParam("columnFamily") String columnFamily,
 			@PathParam("key") String key, @QueryParam("index") boolean index, String body,
 			@HeaderParam(CONSISTENCY_LEVEL_HEADER) String consistencyLevel) throws Exception {
-		getCassandraStorage().setKeyspace(keyspace);
 		JSONObject json = (JSONObject) JSONValue.parse(body);
 
 		if (json == null)
@@ -179,7 +173,6 @@ public class DataResource {
 	public void setRow(@PathParam("keyspace") String keyspace, @PathParam("columnFamily") String columnFamily,
 			@PathParam("key") String key, @QueryParam("index") boolean index, String body,
 			@HeaderParam(CONSISTENCY_LEVEL_HEADER) String consistencyLevel) throws Exception {
-		getCassandraStorage().setKeyspace(keyspace);
 		JSONObject json = (JSONObject) JSONValue.parse(body);
 
 		if (json == null)
@@ -204,7 +197,6 @@ public class DataResource {
 	public JSONObject getRow(@PathParam("keyspace") String keyspace, @PathParam("columnFamily") String columnFamily,
 			@PathParam("key") String key, @HeaderParam(CONSISTENCY_LEVEL_HEADER) String consistencyLevel)
 			throws Exception {
-		getCassandraStorage().setKeyspace(keyspace);
 		if (logger.isDebugEnabled())
 			logger.debug("Getting row [" + keyspace + "]:[" + columnFamily + "]:[" + key + "]");
 
@@ -221,7 +213,6 @@ public class DataResource {
 	public long deleteRow(@PathParam("keyspace") String keyspace, @PathParam("columnFamily") String columnFamily,
 			@PathParam("key") String key, @QueryParam("purgeIndex") boolean purgeIndex,
 			@HeaderParam(CONSISTENCY_LEVEL_HEADER) String consistencyLevel) throws Exception {
-		getCassandraStorage().setKeyspace(keyspace);
 		if (logger.isDebugEnabled())
 			logger.debug("Deleting row [" + keyspace + "]:[" + columnFamily + "]:[" + key + "]");
 
@@ -241,7 +232,6 @@ public class DataResource {
 	public String getColumn(@PathParam("keyspace") String keyspace, @PathParam("columnFamily") String columnFamily,
 			@PathParam("key") String key, @PathParam("columnName") String columnName,
 			@HeaderParam(CONSISTENCY_LEVEL_HEADER) String consistencyLevel) throws Exception {
-		getCassandraStorage().setKeyspace(keyspace);
 		if (logger.isDebugEnabled())
 			logger.debug("Getting column [" + keyspace + "]:[" + columnFamily + "]:[" + key + "]:[" + columnName + "]");
 
@@ -259,7 +249,6 @@ public class DataResource {
 			@PathParam("key") String key, @PathParam("columnName") String columnName,
 			@QueryParam("index") boolean index, String body,
 			@HeaderParam(CONSISTENCY_LEVEL_HEADER) String consistencyLevel) throws Exception {
-		getCassandraStorage().setKeyspace(keyspace);
 		if (logger.isDebugEnabled())
 			logger.debug("Deleting row [" + keyspace + "]:[" + columnFamily + "]:[" + key + "] => [" + body + "]");
 		getCassandraStorage().addColumn(keyspace, columnFamily, key, columnName, body,
@@ -276,7 +265,6 @@ public class DataResource {
 			@PathParam("key") String key, @PathParam("columnName") String columnName,
 			@QueryParam("purgeIndex") boolean purgeIndex, @HeaderParam(CONSISTENCY_LEVEL_HEADER) String consistencyLevel)
 			throws Exception {
-		getCassandraStorage().setKeyspace(keyspace);
 		if (logger.isDebugEnabled())
 			logger.debug("Deleting row [" + keyspace + "]:[" + columnFamily + "]:[" + key + "]");
 		getCassandraStorage().deleteColumn(keyspace, columnFamily, key, columnName,

@@ -27,6 +27,7 @@ import java.util.Map;
 import org.apache.cassandra.http.config.VirgilConfiguration;
 import org.apache.cassandra.http.index.Indexer;
 import org.apache.cassandra.thrift.Cassandra;
+import org.apache.cassandra.thrift.CassandraServer;
 import org.apache.cassandra.thrift.CfDef;
 import org.apache.cassandra.thrift.Column;
 import org.apache.cassandra.thrift.ColumnOrSuperColumn;
@@ -39,189 +40,216 @@ import org.apache.cassandra.thrift.KsDef;
 import org.apache.cassandra.thrift.Mutation;
 import org.apache.cassandra.thrift.SlicePredicate;
 import org.apache.cassandra.thrift.SliceRange;
+import org.apache.cassandra.thrift.TBinaryProtocol;
 import org.apache.cassandra.utils.ByteBufferUtil;
+import org.apache.thrift.protocol.TProtocol;
+import org.apache.thrift.transport.TFramedTransport;
+import org.apache.thrift.transport.TSocket;
+import org.apache.thrift.transport.TTransport;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CassandraStorage {
-	private static final int MAX_COLUMNS = 1000;
-	private static final int MAX_ROWS = 20;
-	private static Cassandra.Iface server = null;
-	private Indexer indexer = null;
-	private VirgilConfiguration config = null;
-	private String host = null;
-	private int port;
+    private static Logger logger = LoggerFactory.getLogger(CassandraStorage.class);
 
-	// TODO: Come back and make indexing AOP
-	public CassandraStorage(String host, int port, 
-			VirgilConfiguration config, Indexer indexer, Cassandra.Iface server) {
-		this.indexer = indexer;
-		CassandraStorage.server = server;
-		this.config = config;
-		this.host = host;
-		this.port = port;
-	}
+    private static final int MAX_COLUMNS = 1000;
+    private static final int MAX_ROWS = 20;
+    // private static Cassandra.Iface server = null;
+    private Indexer indexer = null;
+    private VirgilConfiguration config = null;
+    private String host = null;
+    private int port;
+    private boolean embedded = false;
 
-	public String getHost() {
-		return host;
-	}
+    // TODO: Come back and make indexing AOP
+    public CassandraStorage(String host, int port, VirgilConfiguration config, Indexer indexer, boolean embedded) {
+        this.indexer = indexer;
+        // CassandraStorage.server = server;
+        this.config = config;
+        this.host = host;
+        this.port = port;
+        this.embedded = embedded;
+    }
 
-	public int getPort() {
-		return port;
-	}
+    public String getHost() {
+        return host;
+    }
 
-	/*
-	 * Set's thread local value on the server.
-	 */
-	public void setKeyspace(String keyspace) throws Exception {
-		server.set_keyspace(keyspace);
-	}
+    public int getPort() {
+        return port;
+    }
 
-	public JSONArray getKeyspaces() throws Exception {
-		List<KsDef> keyspaces = server.describe_keyspaces();
-		return JsonMarshaller.marshallKeyspaces(keyspaces, true);
-	}
+    // For now, get a new connection every time.
+    private Cassandra.Iface getCassandra(String keyspace) {
+        try {
+            if (embedded) {
+                Cassandra.Iface server = new CassandraServer();
+                if (keyspace != null)
+                    server.set_keyspace(keyspace);
+                return server;
+            } else {
+                TTransport tr = new TFramedTransport(new TSocket(this.host, this.port));
+                TProtocol proto = new TBinaryProtocol(tr);
+                tr.open();
+                Cassandra.Iface server = new Cassandra.Client(proto);
+                if (keyspace != null)
+                    server.set_keyspace(keyspace);
+                return server;
+            }
+        } catch (Exception e) {
+            logger.error("Could not create remote connection to [" + this.host + ":" + this.port + "]", e);
+            return null;
+        }
+    }
 
-	public void addKeyspace(String keyspace) throws Exception {
-		// TODO: Take key space in via JSON/XML. (Replace hard-coded values)
-		List<CfDef> cfDefList = new ArrayList<CfDef>();
-		KsDef ksDef = new KsDef(keyspace, "org.apache.cassandra.locator.SimpleStrategy", cfDefList);
-		ksDef.putToStrategy_options("replication_factor", "1");
-		server.system_add_keyspace(ksDef);
-	}
+    public JSONArray getKeyspaces() throws Exception {
+        List<KsDef> keyspaces = getCassandra(null).describe_keyspaces();
+        return JsonMarshaller.marshallKeyspaces(keyspaces, true);
+    }
 
-	public void dropColumnFamily(String columnFamily) throws Exception {
-		server.system_drop_column_family(columnFamily);
-	}
+    public void addKeyspace(String keyspace) throws Exception {
+        // TODO: Take key space in via JSON/XML. (Replace hard-coded values)
+        List<CfDef> cfDefList = new ArrayList<CfDef>();
+        KsDef ksDef = new KsDef(keyspace, "org.apache.cassandra.locator.SimpleStrategy", cfDefList);
+        ksDef.putToStrategy_options("replication_factor", "1");
+        getCassandra(null).system_add_keyspace(ksDef);
+    }
 
-	public void dropKeyspace(String keyspace) throws Exception {
-		server.system_drop_keyspace(keyspace);
-	}
+    public void dropColumnFamily(String keyspace, String columnFamily) throws Exception {
+        getCassandra(keyspace).system_drop_column_family(columnFamily);
+    }
 
-	public void createColumnFamily(String keyspace, String columnFamilyName) throws Exception {
-		// TODO: Take column family definition in via JSON/XML. (Replace
-		// hard-coded values)
-		CfDef columnFamily = new CfDef(keyspace, columnFamilyName);
-		columnFamily.setKey_validation_class("UTF8Type");
-		columnFamily.setComparator_type("UTF8Type");
-		columnFamily.setDefault_validation_class("UTF8Type");
-		server.system_add_column_family(columnFamily);
-	}
+    public void dropKeyspace(String keyspace) throws Exception {
+        getCassandra(keyspace).system_drop_keyspace(keyspace);
+    }
 
-	@SuppressWarnings("unchecked")
-	public void addColumn(String keyspace, String column_family, String rowkey, String column_name, String value,
-			ConsistencyLevel consistency_level, boolean index) throws Exception {
-		JSONObject json = new JSONObject();
-		json.put(column_name, value);
-		this.setColumn(keyspace, column_family, rowkey, json, consistency_level, index);
+    public void createColumnFamily(String keyspace, String columnFamilyName) throws Exception {
+        // TODO: Take column family definition in via JSON/XML. (Replace
+        // hard-coded values)
+        CfDef columnFamily = new CfDef(keyspace, columnFamilyName);
+        columnFamily.setKey_validation_class("UTF8Type");
+        columnFamily.setComparator_type("UTF8Type");
+        columnFamily.setDefault_validation_class("UTF8Type");
+        getCassandra(keyspace).system_add_column_family(columnFamily);
+    }
 
-		// TODO: Revisit adding a single field because it requires a fetch
-		// first.
-		if (this.config.isIndexingEnabled() && index) {
-		    JSONObject indexJson = this.getSlice(keyspace, column_family, rowkey, consistency_level);
-			indexJson.put(column_name, value);
-			indexer.index(column_family, rowkey, indexJson);
-		}
-	}
+    @SuppressWarnings("unchecked")
+    public void addColumn(String keyspace, String column_family, String rowkey, String column_name, String value,
+            ConsistencyLevel consistency_level, boolean index) throws Exception {
+        JSONObject json = new JSONObject();
+        json.put(column_name, value);
+        this.setColumn(keyspace, column_family, rowkey, json, consistency_level, index);
 
-	public void setColumn(String keyspace, String column_family, String key, JSONObject json,
-			ConsistencyLevel consistency_level, boolean index) throws Exception {
-		this.setColumn(keyspace, column_family, key, json, consistency_level, index, System.currentTimeMillis() * 1000);
-	}
+        // TODO: Revisit adding a single field because it requires a fetch
+        // first.
+        if (this.config.isIndexingEnabled() && index) {
+            JSONObject indexJson = this.getSlice(keyspace, column_family, rowkey, consistency_level);
+            indexJson.put(column_name, value);
+            indexer.index(column_family, rowkey, indexJson);
+        }
+    }
 
-	public void setColumn(String keyspace, String column_family, String key, JSONObject json,
-			ConsistencyLevel consistency_level, boolean index, long timestamp) throws Exception {
-		List<Mutation> slice = new ArrayList<Mutation>();
-		for (Object field : json.keySet()) {
-			String name = (String) field;
-			String value = (String) json.get(name);
-			Column c = new Column();
-			c.setName(ByteBufferUtil.bytes(name));
-			c.setValue(ByteBufferUtil.bytes(value));
-			c.setTimestamp(timestamp);
+    public void setColumn(String keyspace, String column_family, String key, JSONObject json,
+            ConsistencyLevel consistency_level, boolean index) throws Exception {
+        this.setColumn(keyspace, column_family, key, json, consistency_level, index, System.currentTimeMillis() * 1000);
+    }
 
-			Mutation m = new Mutation();
-			ColumnOrSuperColumn cc = new ColumnOrSuperColumn();
-			cc.setColumn(c);
-			m.setColumn_or_supercolumn(cc);
-			slice.add(m);
-		}
-		Map<ByteBuffer, Map<String, List<Mutation>>> mutationMap = new HashMap<ByteBuffer, Map<String, List<Mutation>>>();
-		Map<String, List<Mutation>> cfMutations = new HashMap<String, List<Mutation>>();
-		cfMutations.put(column_family, slice);
-		mutationMap.put(ByteBufferUtil.bytes(key), cfMutations);
-		server.batch_mutate(mutationMap, consistency_level);
+    public void setColumn(String keyspace, String column_family, String key, JSONObject json,
+            ConsistencyLevel consistency_level, boolean index, long timestamp) throws Exception {
+        List<Mutation> slice = new ArrayList<Mutation>();
+        for (Object field : json.keySet()) {
+            String name = (String) field;
+            String value = (String) json.get(name);
+            Column c = new Column();
+            c.setName(ByteBufferUtil.bytes(name));
+            c.setValue(ByteBufferUtil.bytes(value));
+            c.setTimestamp(timestamp);
 
-		if (config.isIndexingEnabled() && index)
-			indexer.index(column_family, key, json);
-	}
+            Mutation m = new Mutation();
+            ColumnOrSuperColumn cc = new ColumnOrSuperColumn();
+            cc.setColumn(c);
+            m.setColumn_or_supercolumn(cc);
+            slice.add(m);
+        }
+        Map<ByteBuffer, Map<String, List<Mutation>>> mutationMap = new HashMap<ByteBuffer, Map<String, List<Mutation>>>();
+        Map<String, List<Mutation>> cfMutations = new HashMap<String, List<Mutation>>();
+        cfMutations.put(column_family, slice);
+        mutationMap.put(ByteBufferUtil.bytes(key), cfMutations);
+        getCassandra(keyspace).batch_mutate(mutationMap, consistency_level);
 
-	public void deleteColumn(String keyspace, String column_family, String key, String column,
-			ConsistencyLevel consistency_level, boolean purgeIndex) throws Exception {
-		ColumnPath path = new ColumnPath(column_family);
-		path.setColumn(ByteBufferUtil.bytes(column));
-		server.remove(ByteBufferUtil.bytes(key), path, System.currentTimeMillis() * 1000, consistency_level);
+        if (config.isIndexingEnabled() && index)
+            indexer.index(column_family, key, json);
+    }
 
-		// TODO: Revisit deleting a single field because it requires a fetch
-		// first.
-		// Evidently it is impossible to remove just a field from a document in
-		// SOLR
-		// http://stackoverflow.com/questions/4802620/can-you-delete-a-field-from-a-document-in-solr-index
-		if (config.isIndexingEnabled() && purgeIndex) {
-			indexer.delete(column_family, key);
-			JSONObject json = this.getSlice(keyspace, column_family, key, consistency_level);
-			json.remove(column);
-			indexer.index(column_family, key, json);
-		}
-	}
+    public void deleteColumn(String keyspace, String column_family, String key, String column,
+            ConsistencyLevel consistency_level, boolean purgeIndex) throws Exception {
+        ColumnPath path = new ColumnPath(column_family);
+        path.setColumn(ByteBufferUtil.bytes(column));
+        getCassandra(keyspace).remove(ByteBufferUtil.bytes(key), path, System.currentTimeMillis() * 1000,
+                consistency_level);
 
-	public long deleteRow(String keyspace, String column_family, String key, ConsistencyLevel consistency_level,
-			boolean purgeIndex) throws Exception {
-		long deleteTime = System.currentTimeMillis() * 1000;
-		ColumnPath path = new ColumnPath(column_family);
-		server.remove(ByteBufferUtil.bytes(key), path, deleteTime, consistency_level);
+        // TODO: Revisit deleting a single field because it requires a fetch
+        // first.
+        // Evidently it is impossible to remove just a field from a document in
+        // SOLR
+        // http://stackoverflow.com/questions/4802620/can-you-delete-a-field-from-a-document-in-solr-index
+        if (config.isIndexingEnabled() && purgeIndex) {
+            indexer.delete(column_family, key);
+            JSONObject json = this.getSlice(keyspace, column_family, key, consistency_level);
+            json.remove(column);
+            indexer.index(column_family, key, json);
+        }
+    }
 
-		// Update Index
-		if (config.isIndexingEnabled() && purgeIndex) {
-			indexer.delete(column_family, key);
-		}
-		return deleteTime;
-	}
+    public long deleteRow(String keyspace, String column_family, String key, ConsistencyLevel consistency_level,
+            boolean purgeIndex) throws Exception {
+        long deleteTime = System.currentTimeMillis() * 1000;
+        ColumnPath path = new ColumnPath(column_family);
+        getCassandra(keyspace).remove(ByteBufferUtil.bytes(key), path, deleteTime, consistency_level);
 
-	public String getColumn(String keyspace, String columnFamily, String key, String column,
-			ConsistencyLevel consistencyLevel) throws Exception {
-		ColumnPath path = new ColumnPath(columnFamily);
-		path.setColumn(ByteBufferUtil.bytes(column));
-		ColumnOrSuperColumn column_result = server.get(ByteBufferUtil.bytes(key), path, consistencyLevel);
-		return new String(column_result.getColumn().getValue(), "UTF8");
-	}
+        // Update Index
+        if (config.isIndexingEnabled() && purgeIndex) {
+            indexer.delete(column_family, key);
+        }
+        return deleteTime;
+    }
 
-	public JSONArray getRows(String columnFamily, ConsistencyLevel consistencyLevel) throws Exception {
-		SlicePredicate predicate = new SlicePredicate();
-		SliceRange range = new SliceRange(ByteBufferUtil.bytes(""), ByteBufferUtil.bytes(""), false, MAX_COLUMNS);
-		predicate.setSlice_range(range);
+    public String getColumn(String keyspace, String columnFamily, String key, String column,
+            ConsistencyLevel consistencyLevel) throws Exception {
+        ColumnPath path = new ColumnPath(columnFamily);
+        path.setColumn(ByteBufferUtil.bytes(column));
+        ColumnOrSuperColumn column_result = getCassandra(keyspace).get(ByteBufferUtil.bytes(key), path,
+                consistencyLevel);
+        return new String(column_result.getColumn().getValue(), "UTF8");
+    }
 
-		KeyRange keyRange = new KeyRange(MAX_ROWS);
-		keyRange.setStart_key(ByteBufferUtil.bytes(""));
-		keyRange.setEnd_key(ByteBufferUtil.EMPTY_BYTE_BUFFER);
-		ColumnParent parent = new ColumnParent(columnFamily);
-		List<KeySlice> rows = server.get_range_slices(parent, predicate, keyRange, consistencyLevel);
-		return JsonMarshaller.marshallRows(rows, true);
-	}
-	
-	public JSONObject getSlice(String keyspace, String columnFamily, String key, ConsistencyLevel consistencyLevel)
-			throws Exception {
-		SlicePredicate predicate = new SlicePredicate();
-		SliceRange range = new SliceRange(ByteBufferUtil.bytes(""), ByteBufferUtil.bytes(""), false, MAX_COLUMNS);
-		predicate.setSlice_range(range);
-		ColumnParent parent = new ColumnParent(columnFamily);
-		List<ColumnOrSuperColumn> slice = server.get_slice(ByteBufferUtil.bytes(key), parent, predicate,
-				consistencyLevel);
-		if (slice.size() > 0)
-			return JsonMarshaller.marshallSlice(slice);
-		else
-			return null;
-	}
-	
-	
+    public JSONArray getRows(String keyspace, String columnFamily, ConsistencyLevel consistencyLevel) throws Exception {
+        SlicePredicate predicate = new SlicePredicate();
+        SliceRange range = new SliceRange(ByteBufferUtil.bytes(""), ByteBufferUtil.bytes(""), false, MAX_COLUMNS);
+        predicate.setSlice_range(range);
+
+        KeyRange keyRange = new KeyRange(MAX_ROWS);
+        keyRange.setStart_key(ByteBufferUtil.bytes(""));
+        keyRange.setEnd_key(ByteBufferUtil.EMPTY_BYTE_BUFFER);
+        ColumnParent parent = new ColumnParent(columnFamily);
+        List<KeySlice> rows = getCassandra(keyspace).get_range_slices(parent, predicate, keyRange, consistencyLevel);
+        return JsonMarshaller.marshallRows(rows, true);
+    }
+
+    public JSONObject getSlice(String keyspace, String columnFamily, String key, ConsistencyLevel consistencyLevel)
+            throws Exception {
+        SlicePredicate predicate = new SlicePredicate();
+        SliceRange range = new SliceRange(ByteBufferUtil.bytes(""), ByteBufferUtil.bytes(""), false, MAX_COLUMNS);
+        predicate.setSlice_range(range);
+        ColumnParent parent = new ColumnParent(columnFamily);
+        List<ColumnOrSuperColumn> slice = getCassandra(keyspace).get_slice(ByteBufferUtil.bytes(key), parent,
+                predicate, consistencyLevel);
+        if (slice.size() > 0)
+            return JsonMarshaller.marshallSlice(slice);
+        else
+            return null;
+    }
+
 }

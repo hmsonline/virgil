@@ -36,7 +36,6 @@ public class CassandraStorageTest {
 
 		// CREATE KEYSPACE
 		dataService.addKeyspace(KEYSPACE);
-		dataService.setKeyspace(KEYSPACE);
 
 		// CREATE COLUMN FAMILY
 		dataService.createColumnFamily(KEYSPACE, COLUMN_FAMILY);
@@ -61,7 +60,7 @@ public class CassandraStorageTest {
 		assertEquals(null, json);
 
 		// DROP COLUMN FAMILY
-		dataService.dropColumnFamily(COLUMN_FAMILY);
+		dataService.dropColumnFamily(KEYSPACE, COLUMN_FAMILY);
 		boolean threw = false;
 		try {
 			json = dataService.getSlice(KEYSPACE, COLUMN_FAMILY, "TEST_SLICE", ConsistencyLevel.ONE);
