@@ -31,8 +31,7 @@ public class MapReduceResource {
             @QueryParam("inputKeyspace") String inputKeyspace,
             @QueryParam("inputColumnFamily") String inputColumnFamily,
             @QueryParam("outputKeyspace") String outputKeyspace,
-            @QueryParam("outputColumnFamily") String outputColumnFamily, @QueryParam("remote") boolean remote,
-            String source) throws Exception {
+            @QueryParam("outputColumnFamily") String outputColumnFamily, String source) throws Throwable {
         if (inputKeyspace == null)
             throw new RuntimeException("Must supply inputKeyspace.");
         if (inputColumnFamily == null)
@@ -48,24 +47,14 @@ public class MapReduceResource {
             logger.debug("  <-- Output : Keyspace [" + outputKeyspace + "], ColumnFamily [" + outputColumnFamily + "]");
         }
 
-        if (remote) {
-
+        if (this.virgilService.getStorage().isEmbedded()) {
+            logger.debug("Running in embedded mode.");
+            JobSpawner.spawnLocal(jobName, this.getCassandraStorage().getHost(), this.getCassandraStorage().getPort(),
+                    inputKeyspace, inputColumnFamily, outputKeyspace, outputColumnFamily, source, params);
         } else {
-            try {
-                if (this.virgilService.getStorage().isEmbedded()) {
-                    JobSpawner.spawnLocal(jobName, this.getCassandraStorage().getHost(), this.getCassandraStorage()
-                            .getPort(), inputKeyspace, inputColumnFamily, outputKeyspace, outputColumnFamily, source,
-                            params);
-                } else {
-                    JobSpawner.spawnRemote(jobName, this.getCassandraStorage().getHost(), this.getCassandraStorage()
-                            .getPort(), inputKeyspace, inputColumnFamily, outputKeyspace, outputColumnFamily, source,
-                            params);
-
-                }
-            } catch (Throwable e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
+            logger.debug("Spawning job remotely.");
+            JobSpawner.spawnRemote(jobName, this.getCassandraStorage().getHost(), this.getCassandraStorage().getPort(),
+                    inputKeyspace, inputColumnFamily, outputKeyspace, outputColumnFamily, source, params);
         }
     }
 

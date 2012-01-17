@@ -27,17 +27,17 @@
 			<outputDirectory>conf</outputDirectory>
 		</fileSet>
 		<fileSet>
-			<directory>${basedir}/mapreduce/jars</directory>
+			<directory>${basedir}/assembly/example</directory>
+			<outputDirectory>example</outputDirectory>
+		</fileSet>
+		<fileSet>
+			<directory>${basedir}/assembly/mapreduce/jars</directory>
 			<outputDirectory>mapreduce/jars</outputDirectory>
 		</fileSet>
 		<fileSet>
-			<directory>${basedir}/mapreduce/conf</directory>
+			<directory>${basedir}/assembly/mapreduce/conf</directory>
 			<outputDirectory>mapreduce/conf</outputDirectory>
 		</fileSet>		
-                <fileSet>
-			<directory>${basedir}/server/src/main/webapp</directory>
-			<outputDirectory>www</outputDirectory>
-		</fileSet>
 	</fileSets>
 	<dependencySets>
 		<dependencySet>
