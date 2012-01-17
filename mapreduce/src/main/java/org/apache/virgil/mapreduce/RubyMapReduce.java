@@ -41,7 +41,7 @@ import org.slf4j.LoggerFactory;
  */
 public class RubyMapReduce extends Configured implements Tool {
     private static int MAX_COLUMNS_PER_ROW = 1000;
-
+    
     public static void main(String[] args) {
         Configuration conf = JobSpawner.getConfiguration(args);
         try {
@@ -52,6 +52,15 @@ public class RubyMapReduce extends Configured implements Tool {
         }
     }
 
+    public static List<String> getGemPaths() {        
+        // TODO: Make this load the gems dynamically from the filesystem
+        List<String> paths = new ArrayList<String>();
+        paths.add("gems/json-1.6.5-java/lib/");
+        paths.add("gems/rest-client-1.6.7/lib/");
+        paths.add("gems/mime-types-1.17.2/lib/");
+        return paths;
+    }
+ 
     @Override
     public int run(String[] args) throws Exception {
         Job job = new Job(getConf(), getConf().get("jobName"));
@@ -119,6 +128,7 @@ public class RubyMapReduce extends Configured implements Tool {
         protected void setup(Context context) throws IOException, InterruptedException {
             String source = context.getConfiguration().get("source");
             this.rubyContainer = new ScriptingContainer(LocalContextScope.CONCURRENT);
+            this.rubyContainer.setLoadPaths(getGemPaths());
             this.rubyReceiver = rubyContainer.runScriptlet(source);
             if (context.getConfiguration().get("params") != null) {
                 params = new HashMap<String, Object>();

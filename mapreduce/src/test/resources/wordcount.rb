@@ -1,3 +1,6 @@
+require 'json'
+require 'rest-client'
+
 def map(rowKey, columns)
    result = [] 
    columns.each do |column_name, value|
