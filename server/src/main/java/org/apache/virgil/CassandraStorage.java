@@ -76,6 +76,10 @@ public class CassandraStorage {
     public int getPort() {
         return port;
     }
+    
+    public boolean isEmbedded(){
+        return this.embedded;
+    }
 
     // For now, get a new connection every time.
     private Cassandra.Iface getCassandra(String keyspace) throws Exception {

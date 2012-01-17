@@ -5,7 +5,6 @@ import static org.junit.Assert.assertTrue;
 
 import org.apache.cassandra.thrift.ConsistencyLevel;
 import org.apache.cassandra.thrift.InvalidRequestException;
-import org.apache.virgil.ws.VirgilService;
 import org.json.simple.JSONObject;
 import org.junit.Ignore;
 import org.junit.Test;

@@ -32,4 +32,4 @@ fi
 
 CLASSPATH=$CLASSPATH:$cwd/../conf/
 
-$JAVA -cp $CLASSPATH org.apache.cassandra.http.HttpDaemon $@
+$JAVA -cp $CLASSPATH org.apache.virgil.VirgilService server conf/virgil.yaml $@

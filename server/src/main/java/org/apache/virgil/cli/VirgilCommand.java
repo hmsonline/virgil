@@ -8,9 +8,9 @@ import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.thrift.transport.TTransportException;
 import org.apache.virgil.CassandraStorage;
+import org.apache.virgil.VirgilService;
 import org.apache.virgil.config.VirgilConfiguration;
 import org.apache.virgil.index.SolrIndexer;
-import org.apache.virgil.ws.VirgilService;
 
 import com.yammer.dropwizard.AbstractService;
 import com.yammer.dropwizard.cli.ServerCommand;
@@ -25,24 +25,12 @@ public class VirgilCommand extends ServerCommand<VirgilConfiguration> {
 	public Options getOptions() {
 		Options options = new Options();
 		OptionGroup runMode = new OptionGroup();
-		
 		Option host = OptionBuilder.withArgName("h").hasArg().withDescription("Host name for Cassandra.")
 				.create("host");
-		Option port = OptionBuilder.withArgName("p").hasArg().withDescription("Port for Cassandra.")
-				.create("port");
 		Option embedded = OptionBuilder.withArgName("e").withDescription("Run in embedded mode").create("embedded");
-
-		Option yaml = OptionBuilder.withArgName("y").hasArg().withDescription("Cassandra configuration file.")
-				.create("yaml");
-
 		runMode.addOption(host);
 		runMode.addOption(embedded);
-		options.addOptionGroup(runMode);
-		
-		OptionGroup yamlGroup = new OptionGroup();
-		yamlGroup.addOption(yaml);
-		options.addOption(port);
-		options.addOptionGroup(yamlGroup);
+		options.addOptionGroup(runMode);		
 		return options;
 	}
 

@@ -1,6 +1,5 @@
 package org.apache.virgil;
 
-import org.apache.virgil.ws.VirgilService;
 
 public class EmbeddableServer implements Runnable {
     String[] args = null;

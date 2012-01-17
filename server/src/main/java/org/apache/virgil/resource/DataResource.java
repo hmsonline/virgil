@@ -12,10 +12,10 @@ import javax.ws.rs.QueryParam;
 
 import org.apache.cassandra.thrift.ConsistencyLevel;
 import org.apache.virgil.CassandraStorage;
+import org.apache.virgil.VirgilService;
 import org.apache.virgil.config.VirgilConfiguration;
 import org.apache.virgil.ext.PATCH;
 import org.apache.virgil.mapreduce.JobSpawner;
-import org.apache.virgil.ws.VirgilService;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;

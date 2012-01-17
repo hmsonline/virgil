@@ -1,6 +1,6 @@
 package org.apache.virgil.health;
 
-import org.apache.virgil.ws.VirgilService;
+import org.apache.virgil.VirgilService;
 import org.json.simple.JSONArray;
 import com.yammer.metrics.core.HealthCheck;
 

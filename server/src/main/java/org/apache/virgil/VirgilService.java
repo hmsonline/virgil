@@ -1,6 +1,5 @@
-package org.apache.virgil.ws;
+package org.apache.virgil;
 
-import org.apache.virgil.CassandraStorage;
 import org.apache.virgil.cli.VirgilCommand;
 import org.apache.virgil.config.VirgilConfiguration;
 import org.apache.virgil.health.CassandraHealthCheck;
