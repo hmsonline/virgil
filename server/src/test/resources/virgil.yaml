@@ -121,7 +121,7 @@ logging:
   loggers:
 
     # Sets the level for 'com.example.app' to DEBUG.
-    org.apache.cassandra.http: DEBUG
+    org.apache.virgil: DEBUG
     org.apache: WARN
     org.eclipse: WARN
 
