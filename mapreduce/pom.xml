@@ -3,7 +3,7 @@
 
 	<parent>
 		<groupId>org.apache.virgil</groupId>
-		<artifactId>virgil</artifactId>
+		<artifactId>virgil-parent</artifactId>
 		<version>0.10.0-SNAPSHOT</version>
 	</parent>
 
