@@ -6,7 +6,7 @@
 <configuration>
 	<property>
 		<name>mapred.job.tracker</name>
-		<value>dlcirrus01.hmsonline.com:9001</value>
+		<value>JOB_TRACKER:9001</value>
 		<description>Where the job tracker is</description>
 	</property>
         <property>
