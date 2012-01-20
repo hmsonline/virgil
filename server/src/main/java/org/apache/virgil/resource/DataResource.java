@@ -3,7 +3,6 @@ package org.apache.virgil.resource;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -15,7 +14,6 @@ import org.apache.virgil.CassandraStorage;
 import org.apache.virgil.VirgilService;
 import org.apache.virgil.config.VirgilConfiguration;
 import org.apache.virgil.ext.PATCH;
-import org.apache.virgil.mapreduce.JobSpawner;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -273,44 +271,6 @@ public class DataResource {
 			logger.debug("Deleting row [" + keyspace + "]:[" + columnFamily + "]:[" + key + "]");
 		getCassandraStorage().deleteColumn(keyspace, columnFamily, key, columnName,
 				config.getConsistencyLevel(consistencyLevel), purgeIndex);
-	}
-
-	// ================================================================================================================
-	// Map Reduce
-	// ================================================================================================================
-
-	@POST
-	@Path("/job")
-	@Produces({ "text/plain" })
-	public void mapReduce(
-            @QueryParam("params") String params,
-	        @QueryParam("jobName") String jobName, @QueryParam("inputKeyspace") String inputKeyspace,
-			@QueryParam("inputColumnFamily") String inputColumnFamily,
-			@QueryParam("outputKeyspace") String outputKeyspace,
-			@QueryParam("outputColumnFamily") String outputColumnFamily, @QueryParam("remote") boolean remote,
-			String source) throws Exception {
-		if (inputKeyspace == null)
-			throw new RuntimeException("Must supply inputKeyspace.");
-		if (inputColumnFamily == null)
-			throw new RuntimeException("Must supply inputColumnFamily.");
-		if (outputKeyspace == null)
-			throw new RuntimeException("Must supply outputKeyspace.");
-		if (outputColumnFamily == null)
-			throw new RuntimeException("Must supply outputColumnFamily.");
-
-		if (logger.isDebugEnabled()) {
-			logger.debug("Launching job [" + jobName + "]");
-			logger.debug("  --> Input  : Keyspace [" + inputKeyspace + "], ColumnFamily [" + inputColumnFamily + "]");
-			logger.debug("  <-- Output : Keyspace [" + outputKeyspace + "], ColumnFamily [" + outputColumnFamily + "]");
-		}
-
-		if (remote) {
-			
-		} else {
-			JobSpawner.spawnLocal(jobName, this.getCassandraStorage().getHost(), 
-					this.getCassandraStorage().getPort(), inputKeyspace,
-					inputColumnFamily, outputKeyspace, outputColumnFamily, source, params);
-		}
 	}
 	
 	public CassandraStorage getCassandraStorage(){
