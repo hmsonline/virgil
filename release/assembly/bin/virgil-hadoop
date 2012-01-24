@@ -35,6 +35,7 @@ else
     JAVA=`which java`
 fi
 
-CLASSPATH=$CLASSPATH:$cwd/../conf/;$cwd/../mapreduce/conf/
+CLASSPATH=$CLASSPATH:$cwd/../conf/
+CLASSPATH=$CLASSPATH:$cwd/../mapreduce/conf/
 
 $JAVA -cp $CLASSPATH org.apache.virgil.VirgilService server conf/virgil.yaml $@

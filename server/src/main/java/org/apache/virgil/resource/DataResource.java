@@ -9,7 +9,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 
-import org.apache.cassandra.thrift.ConsistencyLevel;
 import org.apache.virgil.CassandraStorage;
 import org.apache.virgil.VirgilService;
 import org.apache.virgil.config.VirgilConfiguration;
@@ -30,19 +29,6 @@ public class DataResource {
 	public DataResource(VirgilService virgilService) {
 		this.virgilService = virgilService;
 		this.config = virgilService.getConfig();
-	}
-
-	// ================================================================================================================
-	// Key Space Operations
-	// ================================================================================================================
-	@GET
-	@Path("/ping")
-	@Produces({ "text/plain" })
-	public String healthCheck() throws Exception {
-		if (logger.isDebugEnabled())
-			logger.debug("Ping.");
-		getCassandraStorage().getSlice("system", "Versions", "build", ConsistencyLevel.ONE);
-		return "OK\n";
 	}
 
 	// ================================================================================================================

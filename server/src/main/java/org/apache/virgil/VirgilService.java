@@ -2,6 +2,7 @@ package org.apache.virgil;
 
 import org.apache.virgil.cli.VirgilCommand;
 import org.apache.virgil.config.VirgilConfiguration;
+import org.apache.virgil.exception.KeyspaceExceptionMapper;
 import org.apache.virgil.health.CassandraHealthCheck;
 import org.apache.virgil.resource.DataResource;
 import org.apache.virgil.resource.MapReduceResource;
@@ -29,6 +30,7 @@ public class VirgilService extends Service<VirgilConfiguration> {
         env.addResource(new MapReduceResource(this));
         env.addResource(new DataResource(this));
         env.addHealthCheck(new CassandraHealthCheck(this));
+        env.addProvider(new KeyspaceExceptionMapper());
     }
 
     public CassandraStorage getStorage() {

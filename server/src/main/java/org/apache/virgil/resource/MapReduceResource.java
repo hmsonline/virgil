@@ -7,6 +7,7 @@ import javax.ws.rs.QueryParam;
 
 import org.apache.virgil.CassandraStorage;
 import org.apache.virgil.VirgilService;
+import org.apache.virgil.config.VirgilConfiguration;
 import org.apache.virgil.mapreduce.JobSpawner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,13 +48,13 @@ public class MapReduceResource {
             logger.debug("  <-- Output : Keyspace [" + outputKeyspace + "], ColumnFamily [" + outputColumnFamily + "]");
         }
 
-        if (this.virgilService.getStorage().isEmbedded()) {
+        if (VirgilConfiguration.isEmbedded()) {
             logger.debug("Running in embedded mode.");
-            JobSpawner.spawnLocal(jobName, this.getCassandraStorage().getHost(), this.getCassandraStorage().getPort(),
-                    inputKeyspace, inputColumnFamily, outputKeyspace, outputColumnFamily, source, params);
+            JobSpawner.spawnLocal(jobName, VirgilConfiguration.getHost(), VirgilConfiguration.getPort(), inputKeyspace,
+                    inputColumnFamily, outputKeyspace, outputColumnFamily, source, params);
         } else {
             logger.debug("Spawning job remotely.");
-            JobSpawner.spawnRemote(jobName, this.getCassandraStorage().getHost(), this.getCassandraStorage().getPort(),
+            JobSpawner.spawnRemote(jobName, VirgilConfiguration.getHost(), VirgilConfiguration.getPort(),
                     inputKeyspace, inputColumnFamily, outputKeyspace, outputColumnFamily, source, params);
         }
     }

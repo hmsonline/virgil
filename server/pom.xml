@@ -31,6 +31,12 @@
 			<artifactId>commons-httpclient</artifactId>
 			<version>3.1</version>
 		</dependency>
+
+		<dependency>
+			<groupId>org.aspectj</groupId>
+			<artifactId>aspectjrt</artifactId>
+			<version>1.6.11</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -40,6 +46,33 @@
 				<directory>${basedir}/src/main/resources</directory>
 			</resource>
 		</resources>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>aspectj-maven-plugin</artifactId>
+				<version>1.4</version>
+				<configuration>
+                                        <complianceLevel>1.5</complianceLevel>
+					<weaveDependencies>
+						<weaveDependency>
+							<groupId>org.apache.cassandra</groupId>
+							<artifactId>cassandra-thrift</artifactId>
+						</weaveDependency>
+						<weaveDependency>
+							<groupId>org.apache.cassandra</groupId>
+							<artifactId>cassandra-all</artifactId>
+						</weaveDependency>
+					</weaveDependencies>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>compile</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
 	</build>
 
 </project>

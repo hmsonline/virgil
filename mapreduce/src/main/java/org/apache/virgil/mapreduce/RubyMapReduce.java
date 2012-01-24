@@ -170,6 +170,7 @@ public class RubyMapReduce extends Configured implements Tool {
         protected void setup(Context context) throws IOException, InterruptedException {
             String source = context.getConfiguration().get("source");
             this.rubyContainer = new ScriptingContainer(LocalContextScope.CONCURRENT);
+            this.rubyContainer.setLoadPaths(getGemPaths());
             this.rubyReceiver = rubyContainer.runScriptlet(source);
             if (context.getConfiguration().get("params") != null) {
                 params = new HashMap<String, Object>();

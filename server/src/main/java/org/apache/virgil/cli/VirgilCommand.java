@@ -47,20 +47,22 @@ public class VirgilCommand extends ServerCommand<VirgilConfiguration> {
 			System.setProperty("cassandra-foreground", "true");
 			System.setProperty(VirgilConfiguration.CASSANDRA_PORT_PROPERTY, "9160");
 			System.setProperty(VirgilConfiguration.CASSANDRA_HOST_PROPERTY, "localhost");
+            System.setProperty(VirgilConfiguration.CASSANDRA_EMBEDDED, "1");
 			CassandraDaemon.main(null);
-			return new CassandraStorage("localhost", 9160, config, indexer, true);
+			return new CassandraStorage(config, indexer);
 		} else {
 			String cassandraHost = params.getOptionValue("host");
 			if (cassandraHost == null)
 				throw new RuntimeException("Need to specify a host if not running in embedded mode. (-e)");
-			System.setProperty(VirgilConfiguration.CASSANDRA_HOST_PROPERTY, cassandraHost);
 			String cassandraPort = params.getOptionValue("port");
 			if (cassandraPort == null)
 				cassandraPort = "9160";
+            System.setProperty(VirgilConfiguration.CASSANDRA_HOST_PROPERTY, cassandraHost);
 			System.setProperty(VirgilConfiguration.CASSANDRA_PORT_PROPERTY, cassandraPort);
+            System.setProperty(VirgilConfiguration.CASSANDRA_EMBEDDED, "0");
 			System.out.println("Starting virgil against remote cassandra server [" + cassandraHost + ":"
 					+ cassandraPort + "]");
-			return new CassandraStorage(cassandraHost, Integer.parseInt(cassandraPort), config, indexer, false);
+			return new CassandraStorage(config, indexer);
 		}
 	}
 

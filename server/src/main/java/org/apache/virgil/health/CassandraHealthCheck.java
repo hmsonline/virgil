@@ -1,7 +1,9 @@
 package org.apache.virgil.health;
 
 import org.apache.virgil.VirgilService;
+import org.apache.virgil.config.VirgilConfiguration;
 import org.json.simple.JSONArray;
+
 import com.yammer.metrics.core.HealthCheck;
 
 public class CassandraHealthCheck extends HealthCheck {
@@ -17,8 +19,8 @@ public class CassandraHealthCheck extends HealthCheck {
 		Result result = null;
 		
 		try {
-			String host = this.service.getStorage().getHost();
-            int port = this.service.getStorage().getPort();
+			String host = VirgilConfiguration.getHost();
+            int port = VirgilConfiguration.getPort();
 			JSONArray keyspaces = this.service.getStorage().getKeyspaces();
 			String output = "Connected to [" + host + ":" + port + "] w/ " + keyspaces.size() + " keyspaces.";
 			result = Result.healthy(output);

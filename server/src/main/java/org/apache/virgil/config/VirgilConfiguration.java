@@ -10,6 +10,7 @@ import com.yammer.dropwizard.config.Configuration;
 public class VirgilConfiguration extends Configuration {
 	public final static String CASSANDRA_HOST_PROPERTY = "virgil.cassandra_host";
 	public final static String CASSANDRA_PORT_PROPERTY = "virgil.cassandra_port";
+    public final static String CASSANDRA_EMBEDDED = "virgil.embedded";
 
 	@NotEmpty
 	@NotNull
@@ -40,4 +41,16 @@ public class VirgilConfiguration extends Configuration {
 		else
 			return ConsistencyLevel.valueOf(consistencyLevel);
 	}
+	
+    public static boolean isEmbedded(){
+        return System.getProperty(VirgilConfiguration.CASSANDRA_EMBEDDED).equals("1");
+    }    
+    
+    public static String getHost(){
+        return System.getProperty(VirgilConfiguration.CASSANDRA_HOST_PROPERTY);
+    }
+    
+    public static int getPort(){
+        return Integer.parseInt(System.getProperty(VirgilConfiguration.CASSANDRA_PORT_PROPERTY));
+    }
 }

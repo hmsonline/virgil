@@ -50,46 +50,29 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 public class CassandraStorage {
-        private static final int MAX_COLUMNS = 1000;
+    private static final int MAX_COLUMNS = 1000;
     private static final int MAX_ROWS = 20;
-    // private static Cassandra.Iface server = null;
     private Indexer indexer = null;
     private VirgilConfiguration config = null;
-    private String host = null;
-    private int port;
-    private boolean embedded = false;
 
     // TODO: Come back and make indexing AOP
-    public CassandraStorage(String host, int port, VirgilConfiguration config, Indexer indexer, boolean embedded) {
+    public CassandraStorage(VirgilConfiguration config, Indexer indexer) {
         this.indexer = indexer;
         // CassandraStorage.server = server;
         this.config = config;
-        this.host = host;
-        this.port = port;
-        this.embedded = embedded;
-    }
-
-    public String getHost() {
-        return host;
-    }
-
-    public int getPort() {
-        return port;
-    }
-    
-    public boolean isEmbedded(){
-        return this.embedded;
     }
 
     // For now, get a new connection every time.
-    private Cassandra.Iface getCassandra(String keyspace) throws Exception {
-        if (embedded) {
+    // TODO: Use connection pooling
+    public static Cassandra.Iface getCassandra(String keyspace)
+            throws Exception {
+        if (VirgilConfiguration.isEmbedded()) {
             Cassandra.Iface server = new CassandraServer();
             if (keyspace != null)
                 server.set_keyspace(keyspace);
             return server;
         } else {
-            TTransport tr = new TFramedTransport(new TSocket(this.host, this.port));
+            TTransport tr = new TFramedTransport(new TSocket(VirgilConfiguration.getHost(), VirgilConfiguration.getPort()));
             TProtocol proto = new TBinaryProtocol(tr);
             tr.open();
             Cassandra.Iface server = new Cassandra.Client(proto);
