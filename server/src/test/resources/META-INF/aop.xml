@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<aspectj>
+	<aspects>
+		<aspect name="org.apache.virgil.aop.CassandraServerAspect" />
+	</aspects>
+	<weaver options="-showWeaveInfo">
+		<include within="org.apache.cassandra.thrift.*" />
+		<include within="org.apache.virgil.*" />
+	</weaver>
+</aspectj>
