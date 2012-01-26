@@ -58,6 +58,8 @@ public class RubyMapReduce extends Configured implements Tool {
         paths.add("gems/json-1.6.5-java/lib/");
         paths.add("gems/rest-client-1.6.7/lib/");
         paths.add("gems/mime-types-1.17.2/lib/");
+        paths.add("gems/jruby-openssl-0.7.5/lib/shared/");
+        paths.add("gems/bouncy-castle-java-1.5.0146.1/lib/");
         return paths;
     }
  

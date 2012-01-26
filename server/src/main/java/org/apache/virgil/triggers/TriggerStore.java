@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.cassandra.db.IColumn;
 import org.apache.cassandra.thrift.CfDef;
 import org.apache.cassandra.thrift.ColumnOrSuperColumn;
 import org.apache.cassandra.thrift.ColumnParent;
@@ -54,8 +53,7 @@ public class TriggerStore {
     public static Trigger getTrigger(String triggerClass) throws Exception{
         Class<Trigger> clazz = (Class<Trigger>) Class.forName(triggerClass);
         return clazz.newInstance();        
-    }
-    
+    }    
     
     public static Map<String, List<Trigger>> getTriggers() throws Exception{
         // TODO: Cache this.       
