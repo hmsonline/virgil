@@ -1,11 +1,21 @@
 package org.apache.virgil.triggers;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import org.apache.cassandra.db.IMutation;
+import org.apache.cassandra.db.RowMutation;
+import org.apache.cassandra.net.MessagingService;
 import org.apache.cassandra.thrift.CfDef;
+import org.apache.cassandra.thrift.Column;
+import org.apache.cassandra.thrift.ColumnOrSuperColumn;
+import org.apache.cassandra.thrift.ConsistencyLevel;
 import org.apache.cassandra.thrift.KsDef;
+import org.apache.cassandra.thrift.Mutation;
+import org.apache.cassandra.utils.ByteBufferUtil;
+import org.apache.cassandra.utils.UUIDGen;
 import org.apache.virgil.CassandraStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,25 +34,38 @@ public class DistributedCommitLog {
                 ksDef.putToStrategy_options("replication_factor", "1");
                 CassandraStorage.getCassandra(null).system_add_keyspace(ksDef);
             } catch (Exception e) {
-                logger.warn("Did not create System.CommitLog. (probably already there)");
+                logger.debug("Did not create System.CommitLog. (probably already there)");
             }
-
             try {
                 CfDef columnFamily = new CfDef(KEYSPACE, COLUMN_FAMILY);
-                columnFamily.setKey_validation_class("UTF8Type");
-                columnFamily.setComparator_type("UTF8Type");
-                columnFamily.setDefault_validation_class("UTF8Type");
+                columnFamily.setKey_validation_class("TimeUUIDType");
                 CassandraStorage.getCassandra(KEYSPACE).system_add_column_family(columnFamily);
                 initialized = true;
             } catch (Exception e) {
-                e.printStackTrace();
-                logger.warn("Did not create System.CommitLog. (probably already there)");
+                logger.debug("Did not create System.CommitLog. (probably already there)");
             }
-
         }
     }
 
-    public static void writeMutation(IMutation mutation) {
-        DistributedCommitLog.create();
+    public static void writeMutation(ConsistencyLevel consistencyLevel, RowMutation rowMutation) 
+            throws Exception {
+        List<Mutation> slice = new ArrayList<Mutation>();
+        Column c = new Column();
+        c.setName(ByteBufferUtil.bytes("mutation"));
+        c.setValue(rowMutation.getSerializedBuffer(MessagingService.version_));
+        c.setTimestamp(System.currentTimeMillis() * 1000);
+
+        Mutation m = new Mutation();
+        ColumnOrSuperColumn cc = new ColumnOrSuperColumn();
+        cc.setColumn(c);
+        m.setColumn_or_supercolumn(cc);
+        slice.add(m);
+        Map<ByteBuffer, Map<String, List<Mutation>>> mutationMap = new HashMap<ByteBuffer, Map<String, List<Mutation>>>();
+        Map<String, List<Mutation>> cfMutations = new HashMap<String, List<Mutation>>();
+        cfMutations.put(COLUMN_FAMILY, slice);
+        byte[] rowKey = UUIDGen.getTimeUUIDBytes();
+        mutationMap.put(ByteBuffer.wrap(rowKey), cfMutations);
+        // TODO: Add Exception Handling.
+        CassandraStorage.getCassandra(KEYSPACE).batch_mutate(mutationMap, consistencyLevel);
     }
 }

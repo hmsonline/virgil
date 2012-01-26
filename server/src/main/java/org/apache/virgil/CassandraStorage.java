@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
 
 import org.apache.cassandra.thrift.Cassandra;
 import org.apache.cassandra.thrift.CassandraServer;
@@ -46,6 +47,9 @@ import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.virgil.config.VirgilConfiguration;
 import org.apache.virgil.index.Indexer;
+import org.apache.virgil.triggers.DistributedCommitLog;
+import org.apache.virgil.triggers.TriggerStore;
+import org.apache.virgil.triggers.TriggerTask;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -54,12 +58,18 @@ public class CassandraStorage {
     private static final int MAX_ROWS = 20;
     private Indexer indexer = null;
     private VirgilConfiguration config = null;
+    private Timer triggerTimer = null;
+    private static final long TRIGGER_FREQUENCY = 5000; // every X milliseconds
 
     // TODO: Come back and make indexing AOP
     public CassandraStorage(VirgilConfiguration config, Indexer indexer) {
         this.indexer = indexer;
         // CassandraStorage.server = server;
         this.config = config;
+        DistributedCommitLog.create();
+        TriggerStore.create();
+        triggerTimer = new Timer(true);
+        triggerTimer.schedule(new TriggerTask(), 0, TRIGGER_FREQUENCY);
     }
 
     // For now, get a new connection every time.

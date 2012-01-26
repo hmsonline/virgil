@@ -121,7 +121,7 @@ logging:
   loggers:
 
     # Sets the level for 'com.example.app' to DEBUG.
-    org.apache.virgil: WARN
+    org.apache.virgil: DEBUG
     org.apache: WARN
     org.eclipse: WARN
     httpclient.wire: WARN
