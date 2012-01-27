@@ -21,10 +21,19 @@ public class JobSpawner {
     public static final int OUTPUT_COLUMN_FAMILY = 6;
     public static final int SOURCE = 7;
     public static final int PARAMS = 8;
+    public static final int MAP_EMIT_FLAG = 9;
+    public static final int REDUCE_RAW_DATA_FLAG = 10;
+    
+    public static final String MAP_EMIT_FLAG_STR = "mapEmitFlag";
+    public static final String REDUCE_RAW_DATA_FLAG_STR = "reduceRawDataFlag";
 
-    private static String[] getArgs(String jobName, String cassandraHost, int cassandraPort, String inputKeyspace,
-            String inputColumnFamily, String outputKeyspace, String outputColumnFamily, String source, String params,
-            boolean local) {
+  private static String[] getArgs(String jobName, String cassandraHost, int cassandraPort,
+                                  String inputKeyspace,
+                                  String inputColumnFamily, String outputKeyspace,
+                                  String outputColumnFamily, String source, String params,
+                                  String mapEmitFlag,
+                                  String reduceRawDataFlag,
+                                  boolean local) {
         List<String> args = new ArrayList<String>();
         if (!local) {
             args.add("mapreduce/jars/virgil-mapreduce-hdeploy.jar");
@@ -39,6 +48,8 @@ public class JobSpawner {
         args.add(outputColumnFamily);
         args.add(source);
         args.add(params);
+        args.add(mapEmitFlag);
+        args.add(reduceRawDataFlag);
         LOG.info("Running job against [" + cassandraHost + ":" + cassandraPort + "]");
         return args.toArray(new String[0]);
     }
@@ -62,23 +73,32 @@ public class JobSpawner {
         if (args.length > JobSpawner.PARAMS && StringUtils.isNotBlank(args[JobSpawner.PARAMS])) {
             conf.set("params", args[JobSpawner.PARAMS]);
         }
+        if (StringUtils.isNotBlank(args[MAP_EMIT_FLAG])){
+          conf.set(MAP_EMIT_FLAG_STR, args[MAP_EMIT_FLAG]);
+        }
+        if (StringUtils.isNotBlank(args[MAP_EMIT_FLAG])){
+          conf.set(MAP_EMIT_FLAG_STR, args[MAP_EMIT_FLAG]);
+        }
+        if (StringUtils.isNotBlank(args[REDUCE_RAW_DATA_FLAG])){
+          conf.set(REDUCE_RAW_DATA_FLAG_STR, args[REDUCE_RAW_DATA_FLAG]);
+        }
         return conf;
     }
 
     public static void spawnLocal(String jobName, String cassandraHost, int cassandraPort, String inputKeyspace,
-            String inputColumnFamily, String outputKeyspace, String outputColumnFamily, String source, String params)
+            String inputColumnFamily, String outputKeyspace, String outputColumnFamily, String source, String params, String mapEmitFlag, String reduceRawDataFlag)
             throws Exception {
         String[] args = JobSpawner.getArgs(jobName, cassandraHost, cassandraPort, inputKeyspace, inputColumnFamily,
-                outputKeyspace, outputColumnFamily, source, params, true);
+                outputKeyspace, outputColumnFamily, source, params, mapEmitFlag, reduceRawDataFlag, true);
         Configuration conf = JobSpawner.getConfiguration(args);
         ToolRunner.run(conf, new RubyMapReduce(), new String[0]);
     }
 
     public static void spawnRemote(String jobName, String cassandraHost, int cassandraPort, String inputKeyspace,
-            String inputColumnFamily, String outputKeyspace, String outputColumnFamily, String source, String params)
+            String inputColumnFamily, String outputKeyspace, String outputColumnFamily, String source, String params, String mapEmitFlag, String reduceRawDataFlag)
             throws Throwable {
         String[] args = JobSpawner.getArgs(jobName, cassandraHost, cassandraPort, inputKeyspace, inputColumnFamily,
-                outputKeyspace, outputColumnFamily, source, params, false);
+                outputKeyspace, outputColumnFamily, source, params, mapEmitFlag, reduceRawDataFlag, false);
         RunJar.main(args);
     }
 }

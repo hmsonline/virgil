@@ -5,6 +5,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.virgil.CassandraStorage;
 import org.apache.virgil.VirgilService;
 import org.apache.virgil.config.VirgilConfiguration;
@@ -32,7 +33,10 @@ public class MapReduceResource {
             @QueryParam("inputKeyspace") String inputKeyspace,
             @QueryParam("inputColumnFamily") String inputColumnFamily,
             @QueryParam("outputKeyspace") String outputKeyspace,
-            @QueryParam("outputColumnFamily") String outputColumnFamily, String source) throws Throwable {
+            @QueryParam("outputColumnFamily") String outputColumnFamily,
+            @QueryParam("mapEmitFlag") String mapEmitFlag,
+            @QueryParam("reduceRawDataFlag") String reduceRawDataFlag,
+            String source) throws Throwable {
         if (inputKeyspace == null)
             throw new RuntimeException("Must supply inputKeyspace.");
         if (inputColumnFamily == null)
@@ -42,6 +46,7 @@ public class MapReduceResource {
         if (outputColumnFamily == null)
             throw new RuntimeException("Must supply outputColumnFamily.");
 
+        
         if (logger.isDebugEnabled()) {
             logger.debug("Launching job [" + jobName + "]");
             logger.debug("  --> Input  : Keyspace [" + inputKeyspace + "], ColumnFamily [" + inputColumnFamily + "]");
@@ -51,11 +56,11 @@ public class MapReduceResource {
         if (VirgilConfiguration.isEmbedded()) {
             logger.debug("Running in embedded mode.");
             JobSpawner.spawnLocal(jobName, VirgilConfiguration.getHost(), VirgilConfiguration.getPort(), inputKeyspace,
-                    inputColumnFamily, outputKeyspace, outputColumnFamily, source, params);
+                    inputColumnFamily, outputKeyspace, outputColumnFamily, source, params, mapEmitFlag, reduceRawDataFlag);
         } else {
             logger.debug("Spawning job remotely.");
             JobSpawner.spawnRemote(jobName, VirgilConfiguration.getHost(), VirgilConfiguration.getPort(),
-                    inputKeyspace, inputColumnFamily, outputKeyspace, outputColumnFamily, source, params);
+                    inputKeyspace, inputColumnFamily, outputKeyspace, outputColumnFamily, source, params, mapEmitFlag, reduceRawDataFlag);
         }
     }
 
