@@ -24,7 +24,7 @@ public class TriggerTask extends TimerTask {
         for (String path : triggerMap.keySet()){
             String keyspace = path.substring(path.indexOf(':'));
             String columnFamily = path.substring(path.indexOf(':'));
-            System.out.println("[" + keyspace + "]:[" + columnFamily + "]");
+            logger.debug("[" + keyspace + "]:[" + columnFamily + "]");
         }
     }
     

@@ -44,17 +44,12 @@ public class JobSpawner {
     }
 
     public static Configuration getConfiguration(String[] args) {
-        for (int i = 0; i < args.length; i++) {
-            System.out.println("[" + i + "] = [" + args[i] + "]");
-        }
-
-        System.out.println("Starting [" + args[JobSpawner.JOB_NAME] + "] against Cassandra ["
+        LOG.debug("Starting [" + args[JobSpawner.JOB_NAME] + "] against Cassandra ["
                 + args[JobSpawner.CASSANDRA_HOST] + ":" + args[JobSpawner.CASSANDRA_PORT] + "]");
-        System.out.println("Input --> [" + args[JobSpawner.INPUT_KEYSPACE] + "]:["
+        LOG.debug("Input --> [" + args[JobSpawner.INPUT_KEYSPACE] + "]:["
                 + args[JobSpawner.INPUT_COLUMN_FAMILY] + "]");
-        System.out.println("Output <-- [" + args[JobSpawner.OUTPUT_KEYSPACE] + "]:["
+        LOG.debug("Output <-- [" + args[JobSpawner.OUTPUT_KEYSPACE] + "]:["
                 + args[JobSpawner.OUTPUT_COLUMN_FAMILY] + "]");
-
         Configuration conf = new Configuration();
         conf.set("jobName", args[JobSpawner.JOB_NAME]);
         conf.set("cassandraHost", args[JobSpawner.CASSANDRA_HOST]);

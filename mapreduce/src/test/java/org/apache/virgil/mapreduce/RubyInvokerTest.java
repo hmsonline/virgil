@@ -33,7 +33,6 @@ public class RubyInvokerTest {
     @Test
     public void testMapInvocation() throws Exception {
         String source = getSource();
-        // System.out.println(source);
         ScriptingContainer rubyContainer = new ScriptingContainer(LocalContextScope.CONCURRENT);
         rubyContainer.setLoadPaths(getGemPaths());
         Object rubyReceiver = rubyContainer.runScriptlet(source);
