@@ -1,6 +1,3 @@
-//
-// Copyright (c) 2012 Health Market Science, Inc.
-//
 package org.apache.virgil.mapreduce;
 
 import java.io.IOException;
