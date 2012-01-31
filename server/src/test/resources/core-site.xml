@@ -6,7 +6,7 @@
 <configuration>
 <property>
     <name>fs.default.name</name>
-    <value>hdfs://dlcirrus01.hmsonline.com:9000</value>
+    <value>hdfs://NAME_NODE:9000</value>
     <description>The name of the default filesystem</description>
 </property>
 </configuration>

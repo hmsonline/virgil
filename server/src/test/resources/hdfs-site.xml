@@ -10,15 +10,15 @@
 	</property>
 	<property>
 		<name>dfs.name.dir</name>
-		<value>/opt/cirrus/data/hadoop/dfs/name</value>
+		<value>/opt/data/hadoop/dfs/name</value>
 	</property>
 	<property>
 		<name>dfs.data.dir</name>
-		<value>/opt/cirrus/data/hadoop/dfs/data</value>
+		<value>/opt/data/hadoop/dfs/data</value>
 	</property>
 	<property>
 		<name>dfs.checkpoint.dir</name>
-		<value>/opt/cirrus/data/hadoop/dfs/namesecondary</value>
+		<value>/opt/data/hadoop/dfs/namesecondary</value>
 	</property>
 
 </configuration>
