@@ -23,9 +23,9 @@ public class ConnectionPoolAspect {
         }
     }
 
-    @Pointcut("execution(@PooledConnection * *.*(..))")
+    @Pointcut("execution(@PooledConnection * org.apache.virgil..*.*(..))")
     public void methodAnnotatedWithPooledConnection() {}
-    
+
     @Around("methodAnnotatedWithPooledConnection()")
     public Object handleStorage(ProceedingJoinPoint thisJoinPoint) throws Throwable {
         logger.debug("AOP:STORAGE connection for [" + thisJoinPoint.getSignature() + "]");

@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 public class CassandraServerTriggerAspect {
     private static Logger logger = LoggerFactory.getLogger(CassandraServerTriggerAspect.class);
 
-    @AfterReturning("call(* org.apache.cassandra.thrift.CassandraServer.doInsert(..))")
+    @AfterReturning("execution(* org.apache.cassandra.thrift.CassandraServer.doInsert(..))")
     public void writeToCommitLog(JoinPoint thisJoinPoint) {
         try {
             ConsistencyLevel consistencyLevel = (ConsistencyLevel) thisJoinPoint.getArgs()[0];
