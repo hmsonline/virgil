@@ -16,7 +16,7 @@ public class TriggerTask extends TimerTask {
         Map<String, List<Trigger>> triggerMap = null;
         try {
             logger.debug("Running triggers @ [" + new Date() + "]");
-            triggerMap = TriggerStore.getTriggers();
+            triggerMap = TriggerStore.getStore().getTriggers();
         } catch (Exception e){
             logger.error("Could not retrieve triggers.", e);
         }

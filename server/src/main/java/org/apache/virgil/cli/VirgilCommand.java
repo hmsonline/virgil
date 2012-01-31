@@ -6,7 +6,6 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
-import org.apache.thrift.transport.TTransportException;
 import org.apache.virgil.CassandraStorage;
 import org.apache.virgil.VirgilService;
 import org.apache.virgil.config.VirgilConfiguration;
@@ -35,7 +34,7 @@ public class VirgilCommand extends ServerCommand<VirgilConfiguration> {
 	}
 
 	private CassandraStorage createCassandraStorage(CommandLine params, VirgilConfiguration config)
-			throws TTransportException {
+			throws Exception {
 		SolrIndexer indexer = new SolrIndexer(config);
 
 		if (params.hasOption("embedded")) {

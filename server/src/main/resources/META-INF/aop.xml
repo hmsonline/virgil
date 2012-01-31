@@ -2,6 +2,7 @@
 <aspectj>
 	<aspects>
 		<aspect name="org.apache.virgil.aop.CassandraServerAspect" />
+		<aspect name="org.apache.virgil.aop.ConnectionPoolAspect" />
 	</aspects>
 	<weaver options="-showWeaveInfo">
 		<include within="org.apache.cassandra.thrift.*" />

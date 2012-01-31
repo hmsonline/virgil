@@ -16,30 +16,40 @@ import org.apache.cassandra.thrift.KsDef;
 import org.apache.cassandra.thrift.Mutation;
 import org.apache.cassandra.utils.ByteBufferUtil;
 import org.apache.cassandra.utils.UUIDGen;
-import org.apache.virgil.CassandraStorage;
+import org.apache.virgil.pool.ConnectionPoolClient;
+import org.apache.virgil.pool.PooledConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DistributedCommitLog {
+public class DistributedCommitLog extends ConnectionPoolClient {
+    private static Logger logger = LoggerFactory.getLogger(DistributedCommitLog.class);
+
     public static final String KEYSPACE = "cirrus";
     public static final String COLUMN_FAMILY = "CommitLog";
     private static boolean initialized = false;
-    private static Logger logger = LoggerFactory.getLogger(DistributedCommitLog.class);
+    private static DistributedCommitLog instance = null;
 
-    public static void create() {
+    public static synchronized DistributedCommitLog getLog() {
+        if (instance == null)
+            instance = new DistributedCommitLog();
+        return instance;
+    }
+
+    @PooledConnection
+    public synchronized void create() throws Exception {
         if (!initialized) {
             try {
                 List<CfDef> cfDefList = new ArrayList<CfDef>();
                 KsDef ksDef = new KsDef(KEYSPACE, "org.apache.cassandra.locator.SimpleStrategy", cfDefList);
                 ksDef.putToStrategy_options("replication_factor", "1");
-                CassandraStorage.getCassandra(null).system_add_keyspace(ksDef);
+                getConnection(null).system_add_keyspace(ksDef);
             } catch (Exception e) {
                 logger.debug("Did not create System.CommitLog. (probably already there)");
-            }
+            } 
             try {
                 CfDef columnFamily = new CfDef(KEYSPACE, COLUMN_FAMILY);
                 columnFamily.setKey_validation_class("TimeUUIDType");
-                CassandraStorage.getCassandra(KEYSPACE).system_add_column_family(columnFamily);
+                getConnection(KEYSPACE).system_add_column_family(columnFamily);
                 initialized = true;
             } catch (Exception e) {
                 logger.debug("Did not create System.CommitLog. (probably already there)");
@@ -47,8 +57,8 @@ public class DistributedCommitLog {
         }
     }
 
-    public static void writeMutation(ConsistencyLevel consistencyLevel, RowMutation rowMutation) 
-            throws Exception {
+    @PooledConnection
+    public void writeMutation(ConsistencyLevel consistencyLevel, RowMutation rowMutation) throws Exception {
         List<Mutation> slice = new ArrayList<Mutation>();
         Column c = new Column();
         c.setName(ByteBufferUtil.bytes("mutation"));
@@ -66,6 +76,6 @@ public class DistributedCommitLog {
         byte[] rowKey = UUIDGen.getTimeUUIDBytes();
         mutationMap.put(ByteBuffer.wrap(rowKey), cfMutations);
         // TODO: Add Exception Handling.
-        CassandraStorage.getCassandra(KEYSPACE).batch_mutate(mutationMap, consistencyLevel);
+        getConnection(KEYSPACE).batch_mutate(mutationMap, consistencyLevel);
     }
 }

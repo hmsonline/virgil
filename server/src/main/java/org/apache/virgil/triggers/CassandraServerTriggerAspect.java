@@ -1,21 +1,22 @@
-package org.apache.virgil.aop;
+package org.apache.virgil.triggers;
 
 import java.util.List;
 
 import org.apache.cassandra.db.IMutation;
 import org.apache.cassandra.db.RowMutation;
 import org.apache.cassandra.thrift.ConsistencyLevel;
-import org.apache.virgil.triggers.DistributedCommitLog;
+import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.annotation.AfterReturning;
+import org.aspectj.lang.annotation.Aspect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public aspect CassandraServerAspect {
-    private static Logger logger = LoggerFactory.getLogger(CassandraServerAspect.class);
+@Aspect
+public class CassandraServerTriggerAspect {
+    private static Logger logger = LoggerFactory.getLogger(CassandraServerTriggerAspect.class);
 
-    private pointcut insertMethod() :
-            execution(private void doInsert(ConsistencyLevel, List<? extends IMutation>));
-
-    after() : insertMethod() {
+    @AfterReturning("call(* org.apache.cassandra.thrift.CassandraServer.doInsert(..))")
+    public void writeToCommitLog(JoinPoint thisJoinPoint) {
         try {
             ConsistencyLevel consistencyLevel = (ConsistencyLevel) thisJoinPoint.getArgs()[0];
             @SuppressWarnings("unchecked")
@@ -26,7 +27,7 @@ public aspect CassandraServerAspect {
                     logger.debug("Mutation for [" + rowMutation.getTable() + "] with consistencyLevel ["
                             + consistencyLevel + "]");
                     if (!rowMutation.getTable().equals(DistributedCommitLog.KEYSPACE)) {
-                        DistributedCommitLog.writeMutation(consistencyLevel, rowMutation);
+                        DistributedCommitLog.getLog().writeMutation(consistencyLevel, rowMutation);
                     }
                 }
             }
