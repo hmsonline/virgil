@@ -14,24 +14,20 @@ import org.apache.cassandra.thrift.ColumnOrSuperColumn;
 import org.apache.cassandra.thrift.ColumnParent;
 import org.apache.cassandra.thrift.ColumnPath;
 import org.apache.cassandra.thrift.ConsistencyLevel;
-import org.apache.cassandra.thrift.InvalidRequestException;
 import org.apache.cassandra.thrift.KeyRange;
 import org.apache.cassandra.thrift.KeySlice;
 import org.apache.cassandra.thrift.KsDef;
 import org.apache.cassandra.thrift.Mutation;
 import org.apache.cassandra.thrift.SlicePredicate;
 import org.apache.cassandra.thrift.SliceRange;
-import org.apache.cassandra.thrift.TimedOutException;
-import org.apache.cassandra.thrift.UnavailableException;
 import org.apache.cassandra.utils.ByteBufferUtil;
-import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DistributedCommitLog extends InternalCassandraClient {
     private static Logger logger = LoggerFactory.getLogger(DistributedCommitLog.class);
 
-    public static final String KEYSPACE = "cirrus";
+    public static final String KEYSPACE = "virgil";
     public static final String COLUMN_FAMILY = "CommitLog";
     public static final int MAX_ROW_SIZE = 10;
     public static final int BATCH_SIZE = 50;

@@ -19,8 +19,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class TriggerStore extends InternalCassandraClient {
-    public static final String KEYSPACE = "cirrus";
-    public static final String COLUMN_FAMILY = "Trigger";
+    public static final String KEYSPACE = "virgil";
+    public static final String COLUMN_FAMILY = "Triggers";
     public static final String ENABLED = "enabled";
     private static boolean initialized = false;
     private static Logger logger = LoggerFactory.getLogger(TriggerStore.class);
