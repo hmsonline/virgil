@@ -63,8 +63,6 @@ public class CassandraStorage extends ConnectionPoolClient {
         // CassandraStorage.server = server;
         this.config = config;
         ConnectionPool.initializePool();
-        DistributedCommitLog.getLog().create();
-        TriggerStore.getStore().create();
         triggerTimer = new Timer(true);
         triggerTimer.schedule(new TriggerTask(), 0, TRIGGER_FREQUENCY);
     }

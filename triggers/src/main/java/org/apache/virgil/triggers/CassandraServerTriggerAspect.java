@@ -18,22 +18,27 @@ public class CassandraServerTriggerAspect {
 
     @Around("execution(* org.apache.cassandra.thrift.CassandraServer.doInsert(..))")
     public void writeToCommitLog(ProceedingJoinPoint thisJoinPoint) throws Throwable {
-        try {
-            ConsistencyLevel consistencyLevel = (ConsistencyLevel) thisJoinPoint.getArgs()[0];
-            @SuppressWarnings("unchecked")
-            List<IMutation> mutations = (List<IMutation>) thisJoinPoint.getArgs()[1];
-            List<LogEntry> logEntries = writePending(consistencyLevel, mutations);
+        if (ConfigurationStore.getStore().isCommitLogEnabled()) {
+            try {
+                ConsistencyLevel consistencyLevel = (ConsistencyLevel) thisJoinPoint.getArgs()[0];
+                @SuppressWarnings("unchecked")
+                List<IMutation> mutations = (List<IMutation>) thisJoinPoint.getArgs()[1];
+                List<LogEntry> logEntries = writePending(consistencyLevel, mutations);
+                thisJoinPoint.proceed(thisJoinPoint.getArgs());
+                writeCommitted(logEntries);
+                // TODO: Catch Invalid Request separately, and remove the
+                // pending.
+            } catch (Throwable t) {
+                logger.error("Could not write to cassandra!", t);
+                t.printStackTrace();
+                throw t;
+            }
+        } else {
             thisJoinPoint.proceed(thisJoinPoint.getArgs());
-            writeCommitted(logEntries);
-            // TODO: Catch Invalid Request separately, and remove the pending.
-        } catch (Throwable t) {
-            logger.error("Could not write to cassandra!", t);
-            throw t;
         }
     }
 
-    private List<LogEntry> writePending(ConsistencyLevel consistencyLevel, List<IMutation> mutations)
-            throws Throwable {
+    private List<LogEntry> writePending(ConsistencyLevel consistencyLevel, List<IMutation> mutations) throws Throwable {
         List<LogEntry> logEntries = new ArrayList<LogEntry>();
         for (IMutation mutation : mutations) {
             if (mutation instanceof RowMutation) {
@@ -48,8 +53,7 @@ public class CassandraServerTriggerAspect {
         return logEntries;
     }
 
-    private void writeCommitted(List<LogEntry> logEntries)
-            throws Throwable {
+    private void writeCommitted(List<LogEntry> logEntries) throws Throwable {
         for (LogEntry logEntry : logEntries) {
             logEntry.setStatus(LogEntryStatus.COMMITTED);
             DistributedCommitLog.getLog().writeLogEntry(logEntry);

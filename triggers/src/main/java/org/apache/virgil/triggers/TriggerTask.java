@@ -1,6 +1,5 @@
 package org.apache.virgil.triggers;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.TimerTask;
@@ -13,28 +12,31 @@ public class TriggerTask extends TimerTask {
 
     @Override
     public void run() {
-        Map<String, List<Trigger>> triggerMap = null;
         try {
-            logger.debug("Running triggers @ [" + new Date() + "]");
-            triggerMap = TriggerStore.getStore().getTriggers();
-            List<LogEntry> logEntries = DistributedCommitLog.getLog().getPending();
-            for (LogEntry logEntry : logEntries) {
-                logger.debug("Processing Entry [" + logEntry.getUuid() + "]:[" + logEntry.getKeyspace() + "]:["
-                        + logEntry.getColumnFamily() + "]");
-                String path = logEntry.getKeyspace() + ":" + logEntry.getColumnFamily();
-                List<Trigger> triggers = triggerMap.get(path);
-                if (triggers != null) {
-                    for (Trigger trigger : triggers) {
-                        trigger.process(logEntry);
+            if (ConfigurationStore.getStore().isCommitLogEnabled()) {
+                Map<String, List<Trigger>> triggerMap = null;
+                logger.debug("Running triggers.");
+                triggerMap = TriggerStore.getStore().getTriggers();
+                List<LogEntry> logEntries = DistributedCommitLog.getLog().getPending();
+                for (LogEntry logEntry : logEntries) {
+                    logger.debug("Processing Entry [" + logEntry.getUuid() + "]:[" + logEntry.getKeyspace() + "]:["
+                            + logEntry.getColumnFamily() + "]");
+                    String path = logEntry.getKeyspace() + ":" + logEntry.getColumnFamily();
+                    List<Trigger> triggers = triggerMap.get(path);
+                    if (triggers != null) {
+                        for (Trigger trigger : triggers) {
+                            trigger.process(logEntry);
+                        }
                     }
-                }
 
-                // Provided all processed properly, remove the logEntry
-                DistributedCommitLog.getLog().removeLogEntry(logEntry);
+                    // Provided all processed properly, remove the logEntry
+                    DistributedCommitLog.getLog().removeLogEntry(logEntry);
+                }
+            } else {
+                logger.debug("Skipping trigger execution because commit log is disabled.");
             }
         } catch (Throwable t) {
             logger.error("Could not execute triggers.", t);
         }
-
     }
 }
