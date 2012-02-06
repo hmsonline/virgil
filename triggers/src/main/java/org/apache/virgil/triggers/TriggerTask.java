@@ -17,15 +17,24 @@ public class TriggerTask extends TimerTask {
         try {
             logger.debug("Running triggers @ [" + new Date() + "]");
             triggerMap = TriggerStore.getStore().getTriggers();
-        } catch (Exception e){
-            logger.error("Could not retrieve triggers.", e);
+            List<LogEntry> logEntries = DistributedCommitLog.getLog().getPending();
+            for (LogEntry logEntry : logEntries) {
+                logger.debug("Processing Entry [" + logEntry.getUuid() + "]:[" + logEntry.getKeyspace() + "]:["
+                        + logEntry.getColumnFamily() + "]");
+                String path = logEntry.getKeyspace() + ":" + logEntry.getColumnFamily();
+                List<Trigger> triggers = triggerMap.get(path);
+                if (triggers != null) {
+                    for (Trigger trigger : triggers) {
+                        trigger.process(logEntry);
+                    }
+                }
+
+                // Provided all processed properly, remove the logEntry
+                DistributedCommitLog.getLog().removeLogEntry(logEntry);
+            }
+        } catch (Throwable t) {
+            logger.error("Could not execute triggers.", t);
         }
-        
-        for (String path : triggerMap.keySet()){
-            String keyspace = path.substring(path.indexOf(':'));
-            String columnFamily = path.substring(path.indexOf(':'));
-            logger.debug("[" + keyspace + "]:[" + columnFamily + "]");
-        }
+
     }
-    
 }
