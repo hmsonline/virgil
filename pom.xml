@@ -2,7 +2,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>org.apache.virgil</groupId>
+	<groupId>com.hmsonline</groupId>
 	<artifactId>virgil-parent</artifactId>
 	<version>0.12.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
@@ -12,24 +12,26 @@
 		<module>server</module>
 		<module>mapreduce</module>
 		<module>release</module>
-		<module>triggers</module>
 	</modules>
+
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
 
         <dependencyManagement>
                 <dependencies>
                         <dependency>
-                                <groupId>org.apache.virgil</groupId>
+                                <groupId>com.hmsonline</groupId>
                                 <artifactId>virgil-mapreduce</artifactId>
                                 <version>${project.version}</version>
                         </dependency>
                         <dependency>
-                                <groupId>org.apache.virgil</groupId>
+                                <groupId>com.hmsonline</groupId>
                                 <artifactId>virgil-server</artifactId>
-                                <version>${project.version}</version>
-                        </dependency>
-                        <dependency>
-                                <groupId>org.apache.virgil</groupId>
-                                <artifactId>virgil-triggers</artifactId>
                                 <version>${project.version}</version>
                         </dependency>
                 </dependencies>

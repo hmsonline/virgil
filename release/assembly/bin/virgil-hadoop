@@ -38,4 +38,4 @@ fi
 CLASSPATH=$CLASSPATH:$cwd/../conf/
 CLASSPATH=$CLASSPATH:$cwd/../mapreduce/conf/
 
-$JAVA -cp $CLASSPATH org.apache.virgil.VirgilService server conf/virgil.yaml $@
+$JAVA -cp $CLASSPATH com.hmsonline.virgil.VirgilService server conf/virgil.yaml $@

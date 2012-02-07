@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.apache.virgil</groupId>
+		<groupId>com.hmsonline</groupId>
 		<artifactId>virgil-parent</artifactId>
 		<version>0.12.0-SNAPSHOT</version>
 	</parent>
@@ -14,11 +14,11 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.apache.virgil</groupId>
+			<groupId>com.hmsonline</groupId>
 			<artifactId>virgil-mapreduce</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.virgil</groupId>
+			<groupId>com.hmsonline</groupId>
 			<artifactId>virgil-server</artifactId>
 		</dependency>
 	</dependencies>
