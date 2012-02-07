@@ -37,7 +37,7 @@ public class JobSpawner {
         List<String> args = new ArrayList<String>();
         if (!local) {
             args.add("mapreduce/jars/virgil-mapreduce-hdeploy.jar");
-            args.add("org.apache.virgil.mapreduce.RubyMapReduce");
+            args.add("com.hmsonline.virgil.mapreduce.RubyMapReduce");
         }
         args.add(jobName);
         args.add(cassandraHost);
