@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+	<appender name="CONSOLE" class="org.apache.log4j.ConsoleAppender">
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern"
+				value="%d{yyyy-MM-dd HH:mm:ss,SSSZ} | %p [%t] %c{1}.%M(%L) | %m%n" />
+		</layout>
+	</appender>
+	
+	<appender name="HTTP_FILE" class="org.apache.log4j.DailyRollingFileAppender">
+		<param name="file" value="log/virgil.log" />
+		<param name="datePattern" value="'.'yyyy-MM" />
+		<param name="append" value="true" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss,SSSZ} | %p [%t] %c{1}.%M(%L) | %m%n" />
+		</layout>
+	</appender>
+	
+	<logger name="org.apache.cxf">
+		<level value="WARN" />
+		<appender-ref ref="HTTP_FILE" />
+	</logger>
+
+	<logger name="org.apache.cassandra">
+		<level value="WARN" />
+	</logger>
+
+	<logger name="org.apache.cassandra.http">
+		<level value="WARN" />
+		<appender-ref ref="HTTP_FILE" />
+	</logger>
+
+	<root>
+		<priority value="WARN" />
+		<appender-ref ref="CONSOLE" />
+	</root>
+
+</log4j:configuration>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<aspectj>
+	<aspects>
+		<aspect name="org.apache.virgil.triggers.CassandraServerTriggerAspect" />
+	</aspects>
+
+	<weaver options="-verbose">
+		<include within="javax.*" />
+		<include within="org.aspectj.*" />
+		<include within="org.apache.virgil.triggers.*" />
+	</weaver>
+
+</aspectj>

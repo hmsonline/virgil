@@ -1,85 +1,90 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>org.apache.cassandra.rest</groupId>
-	<artifactId>virgil</artifactId>
-	<packaging>jar</packaging>
-	<version>1.0.5-SNAPSHOT</version>
-	<name>Cassandra : Rest</name>
-	<url>http://maven.apache.org</url>
 
-	<properties>
-		<cassandra.data.dir>/var/lib</cassandra.data.dir>
-	</properties>
+	<groupId>org.apache.virgil</groupId>
+	<artifactId>virgil-parent</artifactId>
+	<version>0.12.0-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	<name> Virgil : Parent</name>
+
+	<modules>
+		<module>server</module>
+		<module>mapreduce</module>
+		<module>release</module>
+		<module>triggers</module>
+	</modules>
+
+        <dependencyManagement>
+                <dependencies>
+                        <dependency>
+                                <groupId>org.apache.virgil</groupId>
+                                <artifactId>virgil-mapreduce</artifactId>
+                                <version>${project.version}</version>
+                        </dependency>
+                        <dependency>
+                                <groupId>org.apache.virgil</groupId>
+                                <artifactId>virgil-server</artifactId>
+                                <version>${project.version}</version>
+                        </dependency>
+                        <dependency>
+                                <groupId>org.apache.virgil</groupId>
+                                <artifactId>virgil-triggers</artifactId>
+                                <version>${project.version}</version>
+                        </dependency>
+                </dependencies>
+        </dependencyManagement>
 
 	<dependencies>
-		<!-- CXF -->
-		<dependency>
-			<groupId>org.apache.cxf</groupId>
-			<artifactId>cxf-bundle-jaxrs</artifactId>
-			<version>2.4.1</version>
-		</dependency>
-
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
 			<version>1.2.16</version>
 		</dependency>
-
 		<dependency>
-			<groupId>org.mortbay.jetty</groupId>
-			<artifactId>jetty</artifactId>
-			<version>6.1.26</version>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.6.4</version>
 		</dependency>
-
 		<dependency>
-			<groupId>commons-httpclient</groupId>
-			<artifactId>commons-httpclient</artifactId>
-			<version>3.1</version>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.6.4</version>
 		</dependency>
-
 		<dependency>
 			<groupId>org.apache.hadoop</groupId>
 			<artifactId>hadoop-core</artifactId>
-			<version>0.20.2</version>
+			<version>0.20.205.0</version>
 		</dependency>
-
-
 		<dependency>
 			<groupId>org.apache.cassandra</groupId>
 			<artifactId>cassandra-all</artifactId>
-			<version>1.0.2</version>
-		</dependency>
-
-		<dependency>
-			<groupId>net.sf.jopt-simple</groupId>
-			<artifactId>jopt-simple</artifactId>
-			<version>4.3</version>
+			<version>1.0.7</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>guava</artifactId>
+					<groupId>com.google.guava</groupId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.codehaus.jackson</groupId>
+					<artifactId>jackson-mapper-asl</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.codehaus.jackson</groupId>
+					<artifactId>jackson-core-asl</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.7</version>
+			<version>4.10</version>
 			<scope>test</scope>
 		</dependency>
-
-		<!-- Ruby Consolidation -->
-		<dependency>
-			<groupId>org.jruby</groupId>
-			<artifactId>jruby-complete</artifactId>
-			<version>1.6.4</version>
-		</dependency>
-
 	</dependencies>
 
 	<build>
-		<resources>
-			<resource>
-				<filtering>true</filtering>
-				<directory>${basedir}/src/main/resources</directory>
-			</resource>
-		</resources>
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -95,7 +100,7 @@
 				<version>2.2.1</version>
 				<configuration>
 					<descriptors>
-						<descriptor>src/main/assembly/distribution.xml</descriptor>
+						<descriptor>assembly/distribution.xml</descriptor>
 					</descriptors>
 				</configuration>
 			</plugin>
@@ -103,3 +108,4 @@
 	</build>
 
 </project>
+
