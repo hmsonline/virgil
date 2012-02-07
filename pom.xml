@@ -8,34 +8,54 @@
 	<packaging>pom</packaging>
 	<name> Virgil : Parent</name>
 
+	<parent>
+		<groupId>org.sonatype.oss</groupId>
+		<artifactId>oss-parent</artifactId>
+		<version>7</version>
+	</parent>
+	
 	<modules>
 		<module>server</module>
 		<module>mapreduce</module>
 		<module>release</module>
 	</modules>
 
-  <licenses>
-    <license>
-      <name>The Apache Software License, Version 2.0</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-      <distribution>repo</distribution>
-    </license>
-  </licenses>
+	<licenses>
+		<license>
+			<name>The Apache Software License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
 
-        <dependencyManagement>
-                <dependencies>
-                        <dependency>
-                                <groupId>com.hmsonline</groupId>
-                                <artifactId>virgil-mapreduce</artifactId>
-                                <version>${project.version}</version>
-                        </dependency>
-                        <dependency>
-                                <groupId>com.hmsonline</groupId>
-                                <artifactId>virgil-server</artifactId>
-                                <version>${project.version}</version>
-                        </dependency>
-                </dependencies>
-        </dependencyManagement>
+	<scm>
+		<connection>scm:git:git@github.com:hmsonline/virgil.git</connection>
+		<developerConnection>scm:git:git@github.com:hmsonline/virgil.git</developerConnection>
+		<url>git@github.com:hmsonline/virgil.git</url>
+	</scm>
+
+	<developers>
+		<developer>
+			<id>boneill42</id>
+			<name>Brian O'Neill</name>
+			<email>bone@alumni.brown.edu</email>
+		</developer>
+	</developers>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.hmsonline</groupId>
+				<artifactId>virgil-mapreduce</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.hmsonline</groupId>
+				<artifactId>virgil-server</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 	<dependencies>
 		<dependency>
@@ -96,15 +116,6 @@
 					<showWarnings>true</showWarnings>
 				</configuration>
 				<version>2.3.2</version>
-			</plugin>
-			<plugin>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<version>2.2.1</version>
-				<configuration>
-					<descriptors>
-						<descriptor>assembly/distribution.xml</descriptor>
-					</descriptors>
-				</configuration>
 			</plugin>
 		</plugins>
 	</build>

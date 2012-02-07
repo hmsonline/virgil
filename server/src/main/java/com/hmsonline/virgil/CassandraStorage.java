@@ -41,14 +41,12 @@ import org.apache.cassandra.utils.ByteBufferUtil;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
+import com.hmsonline.cassandra.triggers.TriggerTask;
 import com.hmsonline.virgil.config.VirgilConfiguration;
 import com.hmsonline.virgil.index.Indexer;
 import com.hmsonline.virgil.pool.ConnectionPool;
 import com.hmsonline.virgil.pool.ConnectionPoolClient;
 import com.hmsonline.virgil.pool.PooledConnection;
-import com.hmsonline.cassandra.triggers.DistributedCommitLog;
-import com.hmsonline.cassandra.triggers.TriggerStore;
-import com.hmsonline.cassandra.triggers.TriggerTask;
 
 public class CassandraStorage extends ConnectionPoolClient {
     private static final int MAX_COLUMNS = 1000;
