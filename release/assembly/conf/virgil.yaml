@@ -121,7 +121,7 @@ logging:
   loggers:
 
     # Sets the level for 'com.example.app' to DEBUG.
-    org.apache.virgil: WARN
+    com.hmsonline.virgil: WARN
     org.apache: WARN
     org.eclipse: WARN
 
@@ -138,7 +138,7 @@ logging:
   file:
 
     # If true, write log statements to a file.
-    enabled: false
+    enabled: true
 
     # Do not write log statements below this threshold to the file.
     threshold: ALL

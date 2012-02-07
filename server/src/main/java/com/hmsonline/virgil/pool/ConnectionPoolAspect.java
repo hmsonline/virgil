@@ -23,7 +23,7 @@ public class ConnectionPoolAspect {
         }
     }
 
-    @Pointcut("execution(@PooledConnection * org.apache.virgil..*.*(..))")
+    @Pointcut("execution(@PooledConnection * com.hmsonline.virgil..*.*(..))")
     public void methodAnnotatedWithPooledConnection() {}
 
     @Around("methodAnnotatedWithPooledConnection()")

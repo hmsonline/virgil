@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <aspectj>
 	<aspects>
-		<aspect name="org.apache.virgil.triggers.CassandraServerTriggerAspect" />
-		<aspect name="org.apache.virgil.pool.ConnectionPoolAspect" />
+		<aspect name="com.hmsonline.virgil.triggers.CassandraServerTriggerAspect" />
+		<aspect name="com.hmsonline.virgil.pool.ConnectionPoolAspect" />
 	</aspects>
 	<weaver options="-showWeaveInfo">
 		<include within="org.apache.cassandra.thrift.*" />
-		<include within="org.apache.virgil.*" />
+		<include within="com.hmsonline.virgil.*" />
 	</weaver>
 </aspectj>
