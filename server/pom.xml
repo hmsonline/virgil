@@ -18,11 +18,34 @@
 			<groupId>com.hmsonline</groupId>
 			<artifactId>virgil-mapreduce</artifactId>
 		</dependency>
-
+		<dependency>
+			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-core-asl</artifactId>
+			<version>1.9.3</version>
+		</dependency>
+		<dependency>
+			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-mapper-asl</artifactId>
+			<version>1.9.3</version>
+		</dependency>
 		<dependency>
 			<groupId>com.hmsonline</groupId>
 			<artifactId>hms-cassandra-triggers</artifactId>
-			<version>0.12.0-SNAPSHOT</version>
+			<version>0.12.1-SNAPSHOT</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>guava</artifactId>
+					<groupId>com.google.guava</groupId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.codehaus.jackson</groupId>
+					<artifactId>jackson-mapper-asl</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.codehaus.jackson</groupId>
+					<artifactId>jackson-core-asl</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<dependency>
