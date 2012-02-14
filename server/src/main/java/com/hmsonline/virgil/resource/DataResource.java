@@ -9,6 +9,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 
+import org.apache.commons.lang.StringUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -110,10 +111,19 @@ public class DataResource {
 	@Path("/{keyspace}/{columnFamily}")
 	@Produces({ "application/json" })
 	public void createColumnFamily(@PathParam("keyspace") String keyspace,
-			@PathParam("columnFamily") String columnFamily) throws Exception {
+			@PathParam("columnFamily") String columnFamily,
+			@QueryParam("indexedColumns") String indexedColumns) throws Exception {
+	  JSONArray indexedColumnsJson;
+	  if(StringUtils.isNotBlank(indexedColumns)) {
+	    indexedColumnsJson = (JSONArray) JSONValue.parse(indexedColumns);
+	  }
+	  else {
+	    indexedColumnsJson = null;
+	  }
+	  
 		if (logger.isDebugEnabled())
-			logger.debug("Creating column family [" + keyspace + "]:[" + columnFamily + "]");
-		getCassandraStorage().createColumnFamily(keyspace, columnFamily);
+			logger.debug("Creating column family [" + keyspace + "]:[" + columnFamily + "]" + " indexed: " + indexedColumns);
+		getCassandraStorage().createColumnFamily(keyspace, columnFamily, indexedColumnsJson);
 	}
 
 	@DELETE
