@@ -27,10 +27,12 @@ import java.util.Timer;
 
 import org.apache.cassandra.thrift.CfDef;
 import org.apache.cassandra.thrift.Column;
+import org.apache.cassandra.thrift.ColumnDef;
 import org.apache.cassandra.thrift.ColumnOrSuperColumn;
 import org.apache.cassandra.thrift.ColumnParent;
 import org.apache.cassandra.thrift.ColumnPath;
 import org.apache.cassandra.thrift.ConsistencyLevel;
+import org.apache.cassandra.thrift.IndexType;
 import org.apache.cassandra.thrift.KeyRange;
 import org.apache.cassandra.thrift.KeySlice;
 import org.apache.cassandra.thrift.KsDef;
@@ -38,6 +40,10 @@ import org.apache.cassandra.thrift.Mutation;
 import org.apache.cassandra.thrift.SlicePredicate;
 import org.apache.cassandra.thrift.SliceRange;
 import org.apache.cassandra.utils.ByteBufferUtil;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
+import org.codehaus.jackson.map.JsonSerializer;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -92,14 +98,34 @@ public class CassandraStorage extends ConnectionPoolClient {
     }
 
     @PooledConnection
-    public void createColumnFamily(String keyspace, String columnFamilyName) throws Exception {
-        // TODO: Take column family definition in via JSON/XML. (Replace
-        // hard-coded values)
-        CfDef columnFamily = new CfDef(keyspace, columnFamilyName);
-        columnFamily.setKey_validation_class("UTF8Type");
-        columnFamily.setComparator_type("UTF8Type");
-        columnFamily.setDefault_validation_class("UTF8Type");
-        getConnection(keyspace).system_add_column_family(columnFamily);
+    public void createColumnFamily(String keyspace, String columnFamilyName,
+                                   JSONArray indexedColumnsJson) throws Exception {
+      // TODO: Take column family definition in via JSON/XML. (Replace
+      // hard-coded values)
+      CfDef columnFamily = new CfDef(keyspace, columnFamilyName);
+      columnFamily.setKey_validation_class("UTF8Type");
+      columnFamily.setComparator_type("UTF8Type");
+      columnFamily.setDefault_validation_class("UTF8Type");
+      
+      //add indexes on columns
+      if (indexedColumnsJson != null && CollectionUtils.isNotEmpty(indexedColumnsJson)) {
+        for (Object indexedColumn : indexedColumnsJson) {
+          if (indexedColumn != null) {
+            String indexedColumnStr = indexedColumn.toString();
+            if (StringUtils.isNotBlank(indexedColumnStr)) {
+              List<ColumnDef> columnMetadata = columnFamily.getColumn_metadata();
+              columnMetadata = columnMetadata != null ? columnMetadata : new ArrayList<ColumnDef>();
+              ColumnDef colDef = new ColumnDef();
+              colDef.setName(indexedColumnStr.getBytes());
+              colDef.index_type = IndexType.KEYS;
+              colDef.setIndex_name(keyspace + "_" + columnFamilyName + "_" + indexedColumnStr + "_INDEX");
+              columnMetadata.add(colDef);
+              columnFamily.setColumn_metadata(columnMetadata);
+            }
+          }
+        }
+      }
+      getConnection(keyspace).system_add_column_family(columnFamily);
     }
 
     @SuppressWarnings("unchecked")
