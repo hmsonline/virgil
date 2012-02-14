@@ -98,11 +98,6 @@ public class CassandraStorage extends ConnectionPoolClient {
     }
 
     @PooledConnection
-    public void createColumnFamily(String keyspace, String columnFamilyName) throws Exception {
-      createColumnFamily(keyspace, columnFamilyName, null);
-    }
-    
-    @PooledConnection
     public void createColumnFamily(String keyspace, String columnFamilyName,
                                    JSONArray indexedColumnsJson) throws Exception {
       // TODO: Take column family definition in via JSON/XML. (Replace

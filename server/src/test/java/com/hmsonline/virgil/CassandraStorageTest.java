@@ -37,7 +37,7 @@ public class CassandraStorageTest extends VirgilServerTest {
         dataService.addKeyspace(KEYSPACE);
 
         // CREATE COLUMN FAMILY
-        dataService.createColumnFamily(KEYSPACE, COLUMN_FAMILY);
+        dataService.createColumnFamily(KEYSPACE, COLUMN_FAMILY, null);
 
         // INSERT THE ROW
         dataService.setColumn(KEYSPACE, COLUMN_FAMILY, KEY, slice, ConsistencyLevel.ONE, false);
