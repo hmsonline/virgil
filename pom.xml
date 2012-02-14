@@ -107,13 +107,6 @@
 	</dependencies>
 
 	<build>
-                <extensions>
-                        <extension>
-                                <groupId>org.apache.maven.wagon</groupId>
-                                <artifactId>wagon-ssh-external</artifactId>
-                                <version>1.0-beta-6</version>
-                        </extension>
-                </extensions>
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -126,12 +119,6 @@
 			</plugin>
 		</plugins>
 	</build>
-        <distributionManagement>
-                <site>
-                        <id>build-site</id>
-                        <url>scpexe://${site.baseuri}/virgil/${project.version}</url>
-                </site>
-        </distributionManagement>
 
 </project>
 
