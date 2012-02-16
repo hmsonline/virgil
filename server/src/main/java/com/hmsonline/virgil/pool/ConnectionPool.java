@@ -12,6 +12,7 @@ import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TFramedTransport;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
+import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +30,7 @@ public class ConnectionPool {
     private static Map<Cassandra.Iface, TTransport> socketMap = new HashMap<Cassandra.Iface, TTransport>();
     private static Cassandra.Iface embeddedServer = null;
 
-    public static void initializePool() throws Exception {
+    public static void initializePool() throws TTransportException {
         logger.debug("Creating connection pool, initializing [" + MAX_POOL_SIZE + "] connections.");
         // Don't need pooling if we are embedded
         if (VirgilConfiguration.isEmbedded()) {
@@ -41,7 +42,7 @@ public class ConnectionPool {
         }
     }
 
-    public static Cassandra.Iface createConnection() throws Exception {
+    public static Cassandra.Iface createConnection() throws TTransportException {
         if (VirgilConfiguration.isEmbedded()) {
             return new CassandraServer();
         } else {
@@ -93,4 +94,17 @@ public class ConnectionPool {
             LOCK.notify();
         }
     }
+
+    public static Cassandra.Iface expel(Cassandra.Iface connection) throws Exception {
+        if (!VirgilConfiguration.isEmbedded()) {
+            TTransport transport = socketMap.get(connection);
+            try {
+                transport.close();
+            } catch (Exception e){}
+            socketMap.remove(connection);
+        }
+        return createConnection();
+    }
+
+    
 }

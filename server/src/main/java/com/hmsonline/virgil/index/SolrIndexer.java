@@ -1,6 +1,9 @@
 package com.hmsonline.virgil.index;
 
+import java.io.IOException;
+
 import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
@@ -22,13 +25,13 @@ public class SolrIndexer implements Indexer {
         solrUrl = config.getSolrHost();
     }
 
-    public void index(String columnFamily, String rowKey, String json) throws Exception {
+    public void index(String columnFamily, String rowKey, String json) throws HttpException, IOException  {
         JSONObject row = (JSONObject) JSONValue.parse(json);
         index(columnFamily, rowKey, row);
     }
 
     @SuppressWarnings("unchecked")
-    public void index(String columnFamily, String rowKey, JSONObject row) throws Exception {
+    public void index(String columnFamily, String rowKey, JSONObject row) throws HttpException, IOException {
         HttpClient client = new HttpClient();
         PostMethod post = new PostMethod(solrUrl + "update/json?commit=true");
         JSONObject document = new JSONObject();
@@ -50,7 +53,7 @@ public class SolrIndexer implements Indexer {
         }
     }
 
-    public void delete(String columnFamily, String rowKey) throws Exception {
+    public void delete(String columnFamily, String rowKey) throws HttpException, IOException {
         HttpClient client = new HttpClient();
 
         // Commit

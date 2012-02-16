@@ -1,6 +1,7 @@
 package com.hmsonline.virgil;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.CharacterCodingException;
 import java.nio.charset.MalformedInputException;
 import java.util.List;
 
@@ -35,7 +36,7 @@ public class JsonMarshaller {
     }
 
     @SuppressWarnings("unchecked")
-	public static JSONArray marshallRows(List<KeySlice> rows, boolean flatten) throws Exception {
+	public static JSONArray marshallRows(List<KeySlice> rows, boolean flatten) throws CharacterCodingException  {
 		if (flatten){
 			JSONArray cfJson = new JSONArray();
 			for (KeySlice row : rows){

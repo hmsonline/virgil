@@ -18,12 +18,14 @@
 
 package com.hmsonline.virgil;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Timer;
 
 import org.apache.cassandra.thrift.CfDef;
 import org.apache.cassandra.thrift.Column;
@@ -31,17 +33,24 @@ import org.apache.cassandra.thrift.ColumnOrSuperColumn;
 import org.apache.cassandra.thrift.ColumnParent;
 import org.apache.cassandra.thrift.ColumnPath;
 import org.apache.cassandra.thrift.ConsistencyLevel;
+import org.apache.cassandra.thrift.InvalidRequestException;
 import org.apache.cassandra.thrift.KeyRange;
 import org.apache.cassandra.thrift.KeySlice;
 import org.apache.cassandra.thrift.KsDef;
 import org.apache.cassandra.thrift.Mutation;
+import org.apache.cassandra.thrift.NotFoundException;
+import org.apache.cassandra.thrift.SchemaDisagreementException;
 import org.apache.cassandra.thrift.SlicePredicate;
 import org.apache.cassandra.thrift.SliceRange;
+import org.apache.cassandra.thrift.TimedOutException;
+import org.apache.cassandra.thrift.UnavailableException;
 import org.apache.cassandra.utils.ByteBufferUtil;
+import org.apache.commons.httpclient.HttpException;
+import org.apache.thrift.TException;
+import org.apache.thrift.transport.TTransportException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
-import com.hmsonline.cassandra.triggers.TriggerTask;
 import com.hmsonline.virgil.config.VirgilConfiguration;
 import com.hmsonline.virgil.index.Indexer;
 import com.hmsonline.virgil.pool.ConnectionPool;
@@ -53,27 +62,23 @@ public class CassandraStorage extends ConnectionPoolClient {
     private static final int MAX_ROWS = 20;
     private Indexer indexer = null;
     private VirgilConfiguration config = null;
-    private Timer triggerTimer = null;
-    private static final long TRIGGER_FREQUENCY = 5000; // every X milliseconds
 
     // TODO: Come back and make indexing AOP
-    public CassandraStorage(VirgilConfiguration config, Indexer indexer) throws Exception {
+    public CassandraStorage(VirgilConfiguration config, Indexer indexer) throws TTransportException {
         this.indexer = indexer;
         // CassandraStorage.server = server;
         this.config = config;
         ConnectionPool.initializePool();
-        triggerTimer = new Timer(true);
-        triggerTimer.schedule(new TriggerTask(), 0, TRIGGER_FREQUENCY);
     }
 
     @PooledConnection
-    public JSONArray getKeyspaces() throws Exception {
+    public JSONArray getKeyspaces() throws InvalidRequestException, TException, UnsupportedEncodingException {
         List<KsDef> keyspaces = getConnection(null).describe_keyspaces();
         return JsonMarshaller.marshallKeyspaces(keyspaces, true);
     }
 
     @PooledConnection
-    public void addKeyspace(String keyspace) throws Exception {
+    public void addKeyspace(String keyspace) throws InvalidRequestException, TException, SchemaDisagreementException {
         // TODO: Take key space in via JSON/XML. (Replace hard-coded values)
         List<CfDef> cfDefList = new ArrayList<CfDef>();
         KsDef ksDef = new KsDef(keyspace, "org.apache.cassandra.locator.SimpleStrategy", cfDefList);
@@ -82,17 +87,19 @@ public class CassandraStorage extends ConnectionPoolClient {
     }
 
     @PooledConnection
-    public void dropColumnFamily(String keyspace, String columnFamily) throws Exception {
+    public void dropColumnFamily(String keyspace, String columnFamily) throws InvalidRequestException, TException,
+            SchemaDisagreementException {
         getConnection(keyspace).system_drop_column_family(columnFamily);
     }
 
     @PooledConnection
-    public void dropKeyspace(String keyspace) throws Exception {
+    public void dropKeyspace(String keyspace) throws InvalidRequestException, SchemaDisagreementException, TException {
         getConnection(keyspace).system_drop_keyspace(keyspace);
     }
 
     @PooledConnection
-    public void createColumnFamily(String keyspace, String columnFamilyName) throws Exception {
+    public void createColumnFamily(String keyspace, String columnFamilyName) throws InvalidRequestException,
+            SchemaDisagreementException, TException {
         // TODO: Take column family definition in via JSON/XML. (Replace
         // hard-coded values)
         CfDef columnFamily = new CfDef(keyspace, columnFamilyName);
@@ -105,7 +112,8 @@ public class CassandraStorage extends ConnectionPoolClient {
     @SuppressWarnings("unchecked")
     @PooledConnection
     public void addColumn(String keyspace, String column_family, String rowkey, String column_name, String value,
-            ConsistencyLevel consistency_level, boolean index) throws Exception {
+            ConsistencyLevel consistency_level, boolean index) throws InvalidRequestException, UnavailableException,
+            TimedOutException, TException, HttpException, IOException {
         JSONObject json = new JSONObject();
         json.put(column_name, value);
         this.setColumn(keyspace, column_family, rowkey, json, consistency_level, index);
@@ -121,13 +129,15 @@ public class CassandraStorage extends ConnectionPoolClient {
 
     @PooledConnection
     public void setColumn(String keyspace, String column_family, String key, JSONObject json,
-            ConsistencyLevel consistency_level, boolean index) throws Exception {
+            ConsistencyLevel consistency_level, boolean index) throws InvalidRequestException, UnavailableException,
+            TimedOutException, TException, HttpException, IOException {
         this.setColumn(keyspace, column_family, key, json, consistency_level, index, System.currentTimeMillis() * 1000);
     }
 
     @PooledConnection
     public void setColumn(String keyspace, String column_family, String key, JSONObject json,
-            ConsistencyLevel consistency_level, boolean index, long timestamp) throws Exception {
+            ConsistencyLevel consistency_level, boolean index, long timestamp) throws InvalidRequestException,
+            UnavailableException, TimedOutException, TException, HttpException, IOException {
         List<Mutation> slice = new ArrayList<Mutation>();
         for (Object field : json.keySet()) {
             String name = (String) field;
@@ -155,7 +165,8 @@ public class CassandraStorage extends ConnectionPoolClient {
 
     @PooledConnection
     public void deleteColumn(String keyspace, String column_family, String key, String column,
-            ConsistencyLevel consistency_level, boolean purgeIndex) throws Exception {
+            ConsistencyLevel consistency_level, boolean purgeIndex) throws InvalidRequestException,
+            UnavailableException, TimedOutException, TException, HttpException, IOException {
         ColumnPath path = new ColumnPath(column_family);
         path.setColumn(ByteBufferUtil.bytes(column));
         getConnection(keyspace).remove(ByteBufferUtil.bytes(key), path, System.currentTimeMillis() * 1000,
@@ -176,7 +187,7 @@ public class CassandraStorage extends ConnectionPoolClient {
 
     @PooledConnection
     public long deleteRow(String keyspace, String column_family, String key, ConsistencyLevel consistency_level,
-            boolean purgeIndex) throws Exception {
+            boolean purgeIndex) throws InvalidRequestException, UnavailableException, TimedOutException, TException, HttpException, IOException {
         long deleteTime = System.currentTimeMillis() * 1000;
         ColumnPath path = new ColumnPath(column_family);
         getConnection(keyspace).remove(ByteBufferUtil.bytes(key), path, deleteTime, consistency_level);
@@ -190,7 +201,8 @@ public class CassandraStorage extends ConnectionPoolClient {
 
     @PooledConnection
     public String getColumn(String keyspace, String columnFamily, String key, String column,
-            ConsistencyLevel consistencyLevel) throws Exception {
+            ConsistencyLevel consistencyLevel) throws InvalidRequestException, NotFoundException, UnavailableException,
+            TimedOutException, TException, UnsupportedEncodingException {
         ColumnPath path = new ColumnPath(columnFamily);
         path.setColumn(ByteBufferUtil.bytes(column));
         ColumnOrSuperColumn column_result = getConnection(keyspace).get(ByteBufferUtil.bytes(key), path,
@@ -199,7 +211,9 @@ public class CassandraStorage extends ConnectionPoolClient {
     }
 
     @PooledConnection
-    public JSONArray getRows(String keyspace, String columnFamily, ConsistencyLevel consistencyLevel) throws Exception {
+    public JSONArray getRows(String keyspace, String columnFamily, ConsistencyLevel consistencyLevel)
+            throws InvalidRequestException, UnavailableException, TimedOutException, TException,
+            CharacterCodingException {
         SlicePredicate predicate = new SlicePredicate();
         SliceRange range = new SliceRange(ByteBufferUtil.bytes(""), ByteBufferUtil.bytes(""), false, MAX_COLUMNS);
         predicate.setSlice_range(range);
@@ -214,7 +228,8 @@ public class CassandraStorage extends ConnectionPoolClient {
 
     @PooledConnection
     public JSONObject getSlice(String keyspace, String columnFamily, String key, ConsistencyLevel consistencyLevel)
-            throws Exception {
+            throws InvalidRequestException, UnavailableException, TimedOutException, TException,
+            UnsupportedEncodingException {
         SlicePredicate predicate = new SlicePredicate();
         SliceRange range = new SliceRange(ByteBufferUtil.bytes(""), ByteBufferUtil.bytes(""), false, MAX_COLUMNS);
         predicate.setSlice_range(range);
