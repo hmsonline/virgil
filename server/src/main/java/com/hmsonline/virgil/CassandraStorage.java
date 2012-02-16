@@ -29,10 +29,12 @@ import java.util.Map;
 
 import org.apache.cassandra.thrift.CfDef;
 import org.apache.cassandra.thrift.Column;
+import org.apache.cassandra.thrift.ColumnDef;
 import org.apache.cassandra.thrift.ColumnOrSuperColumn;
 import org.apache.cassandra.thrift.ColumnParent;
 import org.apache.cassandra.thrift.ColumnPath;
 import org.apache.cassandra.thrift.ConsistencyLevel;
+import org.apache.cassandra.thrift.IndexType;
 import org.apache.cassandra.thrift.InvalidRequestException;
 import org.apache.cassandra.thrift.KeyRange;
 import org.apache.cassandra.thrift.KeySlice;
@@ -45,7 +47,9 @@ import org.apache.cassandra.thrift.SliceRange;
 import org.apache.cassandra.thrift.TimedOutException;
 import org.apache.cassandra.thrift.UnavailableException;
 import org.apache.cassandra.utils.ByteBufferUtil;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.httpclient.HttpException;
+import org.apache.commons.lang.StringUtils;
 import org.apache.thrift.TException;
 import org.apache.thrift.transport.TTransportException;
 import org.json.simple.JSONArray;
@@ -98,14 +102,32 @@ public class CassandraStorage extends ConnectionPoolClient {
     }
 
     @PooledConnection
-    public void createColumnFamily(String keyspace, String columnFamilyName) throws InvalidRequestException,
-            SchemaDisagreementException, TException {
+    public void createColumnFamily(String keyspace, String columnFamilyName, JSONArray indexedColumnsJson) throws InvalidRequestException, SchemaDisagreementException, TException {
         // TODO: Take column family definition in via JSON/XML. (Replace
         // hard-coded values)
         CfDef columnFamily = new CfDef(keyspace, columnFamilyName);
         columnFamily.setKey_validation_class("UTF8Type");
         columnFamily.setComparator_type("UTF8Type");
         columnFamily.setDefault_validation_class("UTF8Type");
+
+        // add indexes on columns
+        if (indexedColumnsJson != null && CollectionUtils.isNotEmpty(indexedColumnsJson)) {
+            for (Object indexedColumn : indexedColumnsJson) {
+                if (indexedColumn != null) {
+                    String indexedColumnStr = indexedColumn.toString();
+                    if (StringUtils.isNotBlank(indexedColumnStr)) {
+                        List<ColumnDef> columnMetadata = columnFamily.getColumn_metadata();
+                        columnMetadata = columnMetadata != null ? columnMetadata : new ArrayList<ColumnDef>();
+                        ColumnDef colDef = new ColumnDef();
+                        colDef.setName(indexedColumnStr.getBytes());
+                        colDef.index_type = IndexType.KEYS;
+                        colDef.setIndex_name(keyspace + "_" + columnFamilyName + "_" + indexedColumnStr + "_INDEX");
+                        columnMetadata.add(colDef);
+                        columnFamily.setColumn_metadata(columnMetadata);
+                    }
+                }
+            }
+        }
         getConnection(keyspace).system_add_column_family(columnFamily);
     }
 
@@ -187,7 +209,8 @@ public class CassandraStorage extends ConnectionPoolClient {
 
     @PooledConnection
     public long deleteRow(String keyspace, String column_family, String key, ConsistencyLevel consistency_level,
-            boolean purgeIndex) throws InvalidRequestException, UnavailableException, TimedOutException, TException, HttpException, IOException {
+            boolean purgeIndex) throws InvalidRequestException, UnavailableException, TimedOutException, TException,
+            HttpException, IOException {
         long deleteTime = System.currentTimeMillis() * 1000;
         ColumnPath path = new ColumnPath(column_family);
         getConnection(keyspace).remove(ByteBufferUtil.bytes(key), path, deleteTime, consistency_level);
