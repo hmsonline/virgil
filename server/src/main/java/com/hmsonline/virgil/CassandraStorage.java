@@ -51,10 +51,10 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.thrift.TException;
-import org.apache.thrift.transport.TTransportException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
+import com.hmsonline.cassandra.triggers.ConfigurationStore;
 import com.hmsonline.cassandra.triggers.DistributedCommitLog;
 import com.hmsonline.virgil.config.VirgilConfiguration;
 import com.hmsonline.virgil.index.Indexer;
@@ -75,6 +75,7 @@ public class CassandraStorage extends ConnectionPoolClient {
         this.config = config;
         ConnectionPool.initializePool();
         DistributedCommitLog.getLog().getKeyspace(); // Force instantiation of the singleton
+        ConfigurationStore.getStore().getKeyspace(); // Force instantiation of the singleton
     }
 
     @PooledConnection
