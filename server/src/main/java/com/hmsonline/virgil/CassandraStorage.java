@@ -55,6 +55,7 @@ import org.apache.thrift.transport.TTransportException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
+import com.hmsonline.cassandra.triggers.DistributedCommitLog;
 import com.hmsonline.virgil.config.VirgilConfiguration;
 import com.hmsonline.virgil.index.Indexer;
 import com.hmsonline.virgil.pool.ConnectionPool;
@@ -68,11 +69,12 @@ public class CassandraStorage extends ConnectionPoolClient {
     private VirgilConfiguration config = null;
 
     // TODO: Come back and make indexing AOP
-    public CassandraStorage(VirgilConfiguration config, Indexer indexer) throws TTransportException {
+    public CassandraStorage(VirgilConfiguration config, Indexer indexer) throws Exception {
         this.indexer = indexer;
         // CassandraStorage.server = server;
         this.config = config;
         ConnectionPool.initializePool();
+        DistributedCommitLog.getLog().getKeyspace(); // Force instantiation of the singleton
     }
 
     @PooledConnection
