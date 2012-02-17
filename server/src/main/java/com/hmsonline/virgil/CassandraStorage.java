@@ -56,6 +56,7 @@ import org.json.simple.JSONObject;
 
 import com.hmsonline.cassandra.triggers.ConfigurationStore;
 import com.hmsonline.cassandra.triggers.DistributedCommitLog;
+import com.hmsonline.cassandra.triggers.TriggerStore;
 import com.hmsonline.virgil.config.VirgilConfiguration;
 import com.hmsonline.virgil.index.Indexer;
 import com.hmsonline.virgil.pool.ConnectionPool;
@@ -74,8 +75,12 @@ public class CassandraStorage extends ConnectionPoolClient {
         // CassandraStorage.server = server;
         this.config = config;
         ConnectionPool.initializePool();
-        DistributedCommitLog.getLog().getKeyspace(); // Force instantiation of the singleton
-        ConfigurationStore.getStore().getKeyspace(); // Force instantiation of the singleton
+        if (VirgilConfiguration.isEmbedded()) {
+            // Force instantiation of the singletons
+            ConfigurationStore.getStore().getKeyspace();
+            TriggerStore.getStore().getKeyspace();
+            DistributedCommitLog.getLog().getKeyspace();
+        }
     }
 
     @PooledConnection
@@ -105,7 +110,8 @@ public class CassandraStorage extends ConnectionPoolClient {
     }
 
     @PooledConnection
-    public void createColumnFamily(String keyspace, String columnFamilyName, JSONArray indexedColumnsJson) throws InvalidRequestException, SchemaDisagreementException, TException {
+    public void createColumnFamily(String keyspace, String columnFamilyName, JSONArray indexedColumnsJson)
+            throws InvalidRequestException, SchemaDisagreementException, TException {
         // TODO: Take column family definition in via JSON/XML. (Replace
         // hard-coded values)
         CfDef columnFamily = new CfDef(keyspace, columnFamilyName);

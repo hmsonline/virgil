@@ -31,7 +31,7 @@
 		<dependency>
 			<groupId>com.hmsonline</groupId>
 			<artifactId>hms-cassandra-triggers</artifactId>
-			<version>0.13.4</version>
+			<version>0.14.1</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>guava</artifactId>
@@ -65,6 +65,12 @@
 			<artifactId>aspectjrt</artifactId>
 			<version>1.6.11</version>
 		</dependency>
+
+		<dependency>
+			<groupId>org.aspectj</groupId>
+			<artifactId>aspectjweaver</artifactId>
+			<version>1.6.11</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -74,7 +80,6 @@
 				<directory>${basedir}/src/main/resources</directory>
 			</resource>
 		</resources>
-
 		<plugins>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
@@ -82,16 +87,6 @@
 				<version>1.4</version>
 				<configuration>
 					<complianceLevel>1.5</complianceLevel>
-					<weaveDependencies>
-						<weaveDependency>
-							<groupId>org.apache.cassandra</groupId>
-							<artifactId>cassandra-thrift</artifactId>
-						</weaveDependency>
-						<weaveDependency>
-							<groupId>org.apache.cassandra</groupId>
-							<artifactId>cassandra-all</artifactId>
-						</weaveDependency>
-					</weaveDependencies>
 				</configuration>
 				<executions>
 					<execution>
@@ -103,5 +98,4 @@
 			</plugin>
 		</plugins>
 	</build>
-
 </project>

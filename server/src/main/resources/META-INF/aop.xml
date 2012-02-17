@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <aspectj>
 	<aspects>
-		<aspect name="com.hmsonline.cassandra.triggers.CassandraServerTriggerAspect" />
 		<aspect name="com.hmsonline.virgil.pool.ConnectionPoolAspect" />
+		<aspect
+			name="com.hmsonline.cassandra.triggers.CassandraServerTriggerAspect" />
 	</aspects>
-	<weaver options="-showWeaveInfo">
-		<include within="org.apache.cassandra.thrift.*" />
+	<weaver options="-showWeaveInfo -verbose">
 		<include within="com.hmsonline.virgil.*" />
+		<include within="org.apache.cassandra.thrift.CassandraServer" />
 	</weaver>
 </aspectj>
