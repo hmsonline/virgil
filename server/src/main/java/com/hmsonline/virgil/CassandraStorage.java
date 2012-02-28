@@ -34,6 +34,9 @@ import org.apache.cassandra.thrift.ColumnOrSuperColumn;
 import org.apache.cassandra.thrift.ColumnParent;
 import org.apache.cassandra.thrift.ColumnPath;
 import org.apache.cassandra.thrift.ConsistencyLevel;
+import org.apache.cassandra.thrift.IndexClause;
+import org.apache.cassandra.thrift.IndexExpression;
+import org.apache.cassandra.thrift.IndexOperator;
 import org.apache.cassandra.thrift.IndexType;
 import org.apache.cassandra.thrift.InvalidRequestException;
 import org.apache.cassandra.thrift.KeyRange;
@@ -243,9 +246,12 @@ public class CassandraStorage extends ConnectionPoolClient {
     }
 
     @PooledConnection
-    public JSONArray getRows(String keyspace, String columnFamily, ConsistencyLevel consistencyLevel)
+    public JSONArray getRows(String keyspace, String columnFamily, String queryStr, ConsistencyLevel consistencyLevel)
             throws InvalidRequestException, UnavailableException, TimedOutException, TException,
             CharacterCodingException {
+      if(StringUtils.isNotBlank(queryStr)) {
+        return getRowsWithQuery(keyspace, columnFamily, queryStr, consistencyLevel);
+      }
         SlicePredicate predicate = new SlicePredicate();
         SliceRange range = new SliceRange(ByteBufferUtil.bytes(""), ByteBufferUtil.bytes(""), false, MAX_COLUMNS);
         predicate.setSlice_range(range);
@@ -255,6 +261,30 @@ public class CassandraStorage extends ConnectionPoolClient {
         keyRange.setEnd_key(ByteBufferUtil.EMPTY_BYTE_BUFFER);
         ColumnParent parent = new ColumnParent(columnFamily);
         List<KeySlice> rows = getConnection(keyspace).get_range_slices(parent, predicate, keyRange, consistencyLevel);
+        return JsonMarshaller.marshallRows(rows, true);
+    }
+    
+    @PooledConnection
+    public JSONArray getRowsWithQuery(String keyspace, String columnFamily, String queryStr, ConsistencyLevel consistencyLevel)
+            throws InvalidRequestException, UnavailableException, TimedOutException, TException,
+            CharacterCodingException {
+        Query query = QueryParser.parse(queryStr);
+        SlicePredicate predicate = new SlicePredicate();
+        SliceRange range = new SliceRange(ByteBufferUtil.bytes(""), ByteBufferUtil.bytes(""), false, MAX_COLUMNS);
+        predicate.setSlice_range(range);
+
+        ColumnParent parent = new ColumnParent(columnFamily);
+        
+        IndexClause indexClause = new IndexClause();
+        indexClause.setCount(MAX_ROWS);
+        indexClause.setStart_key(new byte[0]);
+        for(String keyName : query.getEqStmt().keySet()) {
+          indexClause.addToExpressions(new IndexExpression(ByteBufferUtil.bytes(keyName),
+                                                           IndexOperator.EQ, ByteBufferUtil.bytes(query.getEqStmt().get(keyName))));
+        }
+        
+        List<KeySlice> rows = getConnection(keyspace).get_indexed_slices(parent, indexClause, predicate,
+                ConsistencyLevel.ALL);
         return JsonMarshaller.marshallRows(rows, true);
     }
 
