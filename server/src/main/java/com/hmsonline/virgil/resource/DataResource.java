@@ -71,13 +71,14 @@ public class DataResource {
 	@Produces({ "application/json" })
 	public JSONArray getColumnFamily(@PathParam("keyspace") String keyspace,
 			@PathParam("columnFamily") String columnFamily,
+			@QueryParam("q") String query,
 			@HeaderParam(CONSISTENCY_LEVEL_HEADER) String consistencyLevel) throws Exception {
 		if (logger.isDebugEnabled())
 			logger.debug("Listing column family [" + keyspace + "]:[" + columnFamily + "]");
 		logger.debug("STORAGE [" + getCassandraStorage() + "]");
 		logger.debug("CONFG [" +config + "]");
 		
-		return getCassandraStorage().getRows(keyspace, columnFamily, config.getConsistencyLevel(consistencyLevel));
+		return getCassandraStorage().getRows(keyspace, columnFamily, query, config.getConsistencyLevel(consistencyLevel));
 	}
 
 	/*
