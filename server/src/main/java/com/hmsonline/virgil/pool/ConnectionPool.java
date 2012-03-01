@@ -13,7 +13,7 @@ public class ConnectionPool {
     private static Logger logger = LoggerFactory.getLogger(ConnectionPool.class);
     // TODO: May want this to match the HTTP thread configuration.
     private static final int MAX_POOL_SIZE = 100;
-    private static final int MAX_TRIES_FOR_CONNECTION = 10;
+    private static final int MAX_TRIES_FOR_CONNECTION = 2;
     private static final int CONNECTION_WAIT_TIME = 500;
     private static Object LOCK = new Object();
 
