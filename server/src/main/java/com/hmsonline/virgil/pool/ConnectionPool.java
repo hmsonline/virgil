@@ -1,17 +1,8 @@
 package com.hmsonline.virgil.pool;
 
-import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Map;
 import java.util.NoSuchElementException;
 
-import org.apache.cassandra.thrift.Cassandra;
-import org.apache.cassandra.thrift.CassandraServer;
-import org.apache.cassandra.thrift.TBinaryProtocol;
-import org.apache.thrift.protocol.TProtocol;
-import org.apache.thrift.transport.TFramedTransport;
-import org.apache.thrift.transport.TSocket;
-import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,19 +13,18 @@ public class ConnectionPool {
     private static Logger logger = LoggerFactory.getLogger(ConnectionPool.class);
     // TODO: May want this to match the HTTP thread configuration.
     private static final int MAX_POOL_SIZE = 100;
-    private static final int MAX_TRIES_FOR_CONNECTION = 3;
+    private static final int MAX_TRIES_FOR_CONNECTION = 10;
     private static final int CONNECTION_WAIT_TIME = 500;
     private static Object LOCK = new Object();
 
-    private static LinkedList<Cassandra.Iface> free = new LinkedList<Cassandra.Iface>();
-    private static Map<Cassandra.Iface, TTransport> socketMap = new HashMap<Cassandra.Iface, TTransport>();
-    private static Cassandra.Iface embeddedServer = null;
+    private static LinkedList<VirgilConnection> free = new LinkedList<VirgilConnection>();
+    private static VirgilConnection embeddedServer = null;
 
     public static void initializePool() throws TTransportException {
         logger.debug("Creating connection pool, initializing [" + MAX_POOL_SIZE + "] connections.");
         // Don't need pooling if we are embedded
         if (VirgilConfiguration.isEmbedded()) {
-            embeddedServer = new CassandraServer();
+            embeddedServer = new VirgilConnection(VirgilConfiguration.isEmbedded());
         } else {
             for (int i = 0; i < MAX_POOL_SIZE; i++) {
                 free.add(createConnection());
@@ -42,21 +32,11 @@ public class ConnectionPool {
         }
     }
 
-    public static Cassandra.Iface createConnection() throws TTransportException {
-        if (VirgilConfiguration.isEmbedded()) {
-            return new CassandraServer();
-        } else {
-            TTransport transport = new TFramedTransport(new TSocket(VirgilConfiguration.getHost(),
-                    VirgilConfiguration.getPort()));
-            TProtocol proto = new TBinaryProtocol(transport);
-            transport.open();
-            Cassandra.Iface connection = new Cassandra.Client(proto);
-            socketMap.put(connection, transport);
-            return connection;
-        }
+    public static VirgilConnection createConnection() throws TTransportException {
+        return new VirgilConnection(VirgilConfiguration.isEmbedded());
     }
 
-    public static Cassandra.Iface getConnection(Object requestor) throws EmptyConnectionPoolException {
+    public static VirgilConnection getConnection(Object requestor) throws EmptyConnectionPoolException, TTransportException {
         // Short circuit if embedded.
         if (VirgilConfiguration.isEmbedded()) {
             return embeddedServer;
@@ -64,7 +44,7 @@ public class ConnectionPool {
 
         for (int x = 0; x < MAX_TRIES_FOR_CONNECTION; x++) {
             try {
-                Cassandra.Iface connection = free.pop();
+                VirgilConnection connection = free.pop();
                 logger.debug("Releasing connection to [" + requestor.getClass() + "] [" + free.size() + "] remain.");
                 return connection;
             } catch (NoSuchElementException nsee) {
@@ -82,7 +62,7 @@ public class ConnectionPool {
         throw new EmptyConnectionPoolException("No cassandra connections left in pool.");
     }
 
-    public static void release(Object requestor, Cassandra.Iface connection) throws Exception {
+    public static void release(Object requestor, VirgilConnection connection) throws Exception {
         // (TODO: Could make to ConnectionPool implementations based on embedded or not.)
         if (VirgilConfiguration.isEmbedded()) {
             return;
@@ -95,16 +75,10 @@ public class ConnectionPool {
         }
     }
 
-    public static Cassandra.Iface expel(Cassandra.Iface connection) throws Exception {
-        if (!VirgilConfiguration.isEmbedded()) {
-            TTransport transport = socketMap.get(connection);
-            try {
-                transport.close();
-            } catch (Exception e){}
-            socketMap.remove(connection);
-        }
+    public static VirgilConnection expel(VirgilConnection connection, Exception reason) throws Exception {
+        logger.warn("Expelling connection [" + connection.getId() + "] from remain because :", reason.toString());
+        connection.close();
         return createConnection();
     }
 
-    
 }
