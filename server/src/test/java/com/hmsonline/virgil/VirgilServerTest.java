@@ -3,7 +3,7 @@ package com.hmsonline.virgil;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
-public class VirgilServerTest {
+public abstract class VirgilServerTest {
     static Thread serverThread = null;
 
     @BeforeClass
