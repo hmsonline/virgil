@@ -1,6 +1,5 @@
 package com.hmsonline.virgil.pool;
 
-import org.apache.cassandra.thrift.Cassandra;
 import org.apache.cassandra.thrift.TimedOutException;
 import org.apache.cassandra.thrift.UnavailableException;
 import org.apache.thrift.TException;
@@ -20,33 +19,32 @@ public class ConnectionPoolAspect {
         int tries = 0;
         Exception exception = null;
         ConnectionPoolClient client = (ConnectionPoolClient) thisJoinPoint.getTarget();
-        Cassandra.Iface connection = ConnectionPool.getConnection(client);
-        client.setConnection(connection);
+        VirgilConnection connection = ConnectionPool.getConnection(client);
         try {
+//            connection.open();
+            client.setConnection(connection.getThriftConnection());
             while (tries < MAX_CONNECTION_RETRIES) {
                 try {
                     return thisJoinPoint.proceed(thisJoinPoint.getArgs());
-
-                    // If we get an exception, let's retry (naively for now)
-                    // with a new connection
-                    // TODO: Collapse these into one when we move to JDK7 (And remove finally)
+                    // TODO: Collapse into one w/ JDK7 (and remove finally)
                 } catch (TException te) {
                     exception = te;
-                    Cassandra.Iface newconnection = ConnectionPool.expel(connection);
-                    client.setConnection(newconnection);
+                    connection = ConnectionPool.expel(connection, exception);
+                    client.setConnection(connection.getThriftConnection());
                 } catch (TimedOutException tmoe) {
                     exception = tmoe;
-                    Cassandra.Iface newconnection = ConnectionPool.expel(connection);
-                    client.setConnection(newconnection);
+                    connection = ConnectionPool.expel(connection, exception);
+                    client.setConnection(connection.getThriftConnection());
                 } catch (UnavailableException ue) {
                     exception = ue;
-                    Cassandra.Iface newconnection = ConnectionPool.expel(connection);
-                    client.setConnection(newconnection);
+                    connection = ConnectionPool.expel(connection, exception);
+                    client.setConnection(connection.getThriftConnection());
                 } finally {
                     tries++;
                 }
             }
         } finally {
+//            connection.close();
             ConnectionPool.release(client, connection);
         }
         throw exception;
