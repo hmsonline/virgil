@@ -3,7 +3,7 @@
 
 	<groupId>com.hmsonline</groupId>
 	<artifactId>virgil-parent</artifactId>
-	<version>0.14.8</version>
+	<version>0.14.9-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name> Virgil : Parent</name>
 
