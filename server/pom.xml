@@ -15,7 +15,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.hmsonline</groupId>
-			<artifactId>virgil-mapreduce</artifactId>
+			<artifactId>hms-cassandra-mapreduce</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.codehaus.jackson</groupId>
