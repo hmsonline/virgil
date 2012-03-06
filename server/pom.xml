@@ -30,7 +30,7 @@
 		<dependency>
 			<groupId>com.hmsonline</groupId>
 			<artifactId>hms-cassandra-triggers</artifactId>
-			<version>0.14.5</version>
+			<version>0.14.6</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>guava</artifactId>
