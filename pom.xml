@@ -9,8 +9,8 @@
 	<name> Virgil </name>
 
 	<properties>
-		<mapreduce.version>0.14.11-SNAPSHOT</mapreduce.version>
-		<rest.version>0.14.9-SNAPSHOT</rest.version>
+		<mapreduce.version>0.15.2</mapreduce.version>
+		<rest.version>0.15.0</rest.version>
 	</properties>
 
         <parent>
