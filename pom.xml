@@ -8,53 +8,27 @@
 	<packaging>pom</packaging>
 	<name> Virgil </name>
 
-        <properties>
-           <mapreduce.version>0.14.11-SNAPSHOT</mapreduce.version>
-           <rest.version>0.14.9-SNAPSHOT</rest.version>
-        </properties>
+	<properties>
+		<mapreduce.version>0.14.11-SNAPSHOT</mapreduce.version>
+		<rest.version>0.14.9-SNAPSHOT</rest.version>
+	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>com.hmsonline</groupId>
 			<artifactId>hms-cassandra-mapreduce</artifactId>
-                        <version>${mapreduce.version}</version>
-                        <scope>compile</scope>
+			<version>${mapreduce.version}</version>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.hmsonline</groupId>
 			<artifactId>hms-cassandra-rest</artifactId>
-                        <version>${rest.version}</version>
+			<version>${rest.version}</version>
 		</dependency>
 	</dependencies>
 
 	<build>
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<version>2.4</version>
-				<executions>
-					<execution>
-						<id>copy</id>
-						<phase>package</phase>
-						<goals>
-						   <goal>copy</goal>
-						</goals>
-						<configuration>
-							<artifactItems>
-								<artifactItem>
-									<groupId>com.hmsonline</groupId>
-									<artifactId>hms-cassandra-mapreduce</artifactId>
-                                                                        <version>${mapreduce.version}</version>
-									<type>jar</type>
-									<overWrite>false</overWrite>
-									<outputDirectory>assembly/mapreduce/jars/</outputDirectory>
-								</artifactItem>
-							</artifactItems>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<version>2.2.1</version>
