@@ -1,133 +1,68 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.hmsonline</groupId>
-	<artifactId>virgil-parent</artifactId>
 	<version>0.14.9-SNAPSHOT</version>
+	<artifactId>virgil</artifactId>
 	<packaging>pom</packaging>
-	<name> Virgil : Parent</name>
+	<name> Virgil </name>
 
-	<parent>
-		<groupId>org.sonatype.oss</groupId>
-		<artifactId>oss-parent</artifactId>
-		<version>7</version>
-	</parent>
-	
-	<modules>
-		<module>server</module>
-		<module>mapreduce</module>
-		<module>release</module>
-	</modules>
-
-	<licenses>
-		<license>
-			<name>The Apache Software License, Version 2.0</name>
-			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-			<distribution>repo</distribution>
-		</license>
-	</licenses>
-
-	<scm>
-		<connection>scm:git:git@github.com:hmsonline/virgil.git</connection>
-		<developerConnection>scm:git:git@github.com:hmsonline/virgil.git</developerConnection>
-		<url>git@github.com:hmsonline/virgil.git</url>
-	</scm>
-
-        <repositories>
-                <repository>
-                        <id>sonatype-nexus-snapshots</id>
-                        <name>Sonatype Nexus Snapshots</name>
-                        <url>http://oss.sonatype.org/content/repositories/snapshots</url>
-                </repository>
-                <repository>
-                        <id>sonatype-nexus-releases</id>
-                        <name>Sonatype Nexus Releases</name>
-                        <url>http://oss.sonatype.org/content/repositories/releases</url>
-                </repository>
-        </repositories>
-
-	<developers>
-		<developer>
-			<id>boneill42</id>
-			<name>Brian O'Neill</name>
-			<email>bone@alumni.brown.edu</email>
-		</developer>
-	</developers>
-
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>com.hmsonline</groupId>
-				<artifactId>virgil-mapreduce</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.hmsonline</groupId>
-				<artifactId>virgil-server</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
+        <properties>
+           <mapreduce.version>0.14.11-SNAPSHOT</mapreduce.version>
+           <rest.version>0.14.9-SNAPSHOT</rest.version>
+        </properties>
 
 	<dependencies>
 		<dependency>
-			<groupId>log4j</groupId>
-			<artifactId>log4j</artifactId>
-			<version>1.2.16</version>
+			<groupId>com.hmsonline</groupId>
+			<artifactId>hms-cassandra-mapreduce</artifactId>
+                        <version>${mapreduce.version}</version>
+                        <scope>compile</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.6.4</version>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-			<version>1.6.4</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.hadoop</groupId>
-			<artifactId>hadoop-core</artifactId>
-			<version>0.20.205.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.cassandra</groupId>
-			<artifactId>cassandra-all</artifactId>
-			<version>1.0.7</version>
-			<exclusions>
-				<exclusion>
-					<artifactId>guava</artifactId>
-					<groupId>com.google.guava</groupId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.codehaus.jackson</groupId>
-					<artifactId>jackson-mapper-asl</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.codehaus.jackson</groupId>
-					<artifactId>jackson-core-asl</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.10</version>
-			<scope>test</scope>
+			<groupId>com.hmsonline</groupId>
+			<artifactId>hms-cassandra-rest</artifactId>
+                        <version>${rest.version}</version>
 		</dependency>
 	</dependencies>
 
 	<build>
 		<plugins>
 			<plugin>
-				<artifactId>maven-compiler-plugin</artifactId>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>2.4</version>
+				<executions>
+					<execution>
+						<id>copy</id>
+						<phase>package</phase>
+						<goals>
+						   <goal>copy</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>com.hmsonline</groupId>
+									<artifactId>hms-cassandra-mapreduce</artifactId>
+                                                                        <version>${mapreduce.version}</version>
+									<type>jar</type>
+									<overWrite>false</overWrite>
+									<outputDirectory>assembly/mapreduce/jars/</outputDirectory>
+								</artifactItem>
+							</artifactItems>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.2.1</version>
 				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
-					<showWarnings>true</showWarnings>
+					<descriptors>
+						<descriptor>assembly/distribution.xml</descriptor>
+					</descriptors>
 				</configuration>
-				<version>2.3.2</version>
 			</plugin>
 		</plugins>
 	</build>
