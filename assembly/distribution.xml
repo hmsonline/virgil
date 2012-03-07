@@ -31,10 +31,6 @@
 			<outputDirectory>example</outputDirectory>
 		</fileSet>
 		<fileSet>
-			<directory>${basedir}/assembly/mapreduce/jars</directory>
-			<outputDirectory>mapreduce/jars</outputDirectory>
-		</fileSet>
-		<fileSet>
 			<directory>${basedir}/assembly/mapreduce/conf</directory>
 			<outputDirectory>mapreduce/conf</outputDirectory>
 		</fileSet>		
