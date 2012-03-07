@@ -8,16 +8,22 @@
 	<packaging>pom</packaging>
 	<name> Virgil </name>
 
+        <properties>
+           <mapreduce.version>0.14.11-SNAPSHOT</mapreduce.version>
+           <rest.version>0.14.9-SNAPSHOT</rest.version>
+        </properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>com.hmsonline</groupId>
 			<artifactId>hms-cassandra-mapreduce</artifactId>
-			<version>0.14.9-SNAPSHOT</version>
+                        <version>${mapreduce.version}</version>
+                        <scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.hmsonline</groupId>
 			<artifactId>hms-cassandra-rest</artifactId>
-			<version>0.14.9-SNAPSHOT</version>
+                        <version>${rest.version}</version>
 		</dependency>
 	</dependencies>
 
@@ -32,14 +38,14 @@
 						<id>copy</id>
 						<phase>package</phase>
 						<goals>
-							<goal>copy</goal>
+						   <goal>copy</goal>
 						</goals>
 						<configuration>
 							<artifactItems>
 								<artifactItem>
 									<groupId>com.hmsonline</groupId>
 									<artifactId>hms-cassandra-mapreduce</artifactId>
-									<version>0.14.9-SNAPSHOT</version>
+                                                                        <version>${mapreduce.version}</version>
 									<type>jar</type>
 									<overWrite>false</overWrite>
 									<outputDirectory>assembly/mapreduce/jars/</outputDirectory>
