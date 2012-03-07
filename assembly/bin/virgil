@@ -32,6 +32,6 @@ fi
 
 CLASSPATH=$CLASSPATH:$cwd/../conf/
 
-JVM_OPTS="$JVM_OPTS -javaagent:$cwd/../lib/aspectjweaver-1.6.11.jar -debug"
+JVM_OPTS="$JVM_OPTS -Xms512m -Xmx1024m -javaagent:$cwd/../lib/aspectjweaver-1.6.11.jar -debug"
 
 $JAVA $JVM_OPTS -cp $CLASSPATH com.hmsonline.virgil.VirgilService server conf/virgil.yaml $@
