@@ -5,12 +5,12 @@
 	<groupId>com.hmsonline</groupId>
 	<version>0.14.9-SNAPSHOT</version>
 	<artifactId>virgil</artifactId>
-	<packaging>pom</packaging>
+	<packaging>jar</packaging>
 	<name> Virgil </name>
 
 	<properties>
-		<mapreduce.version>0.14.11-SNAPSHOT</mapreduce.version>
-		<rest.version>0.14.9-SNAPSHOT</rest.version>
+		<mapreduce.version>0.15.3-SNAPSHOT</mapreduce.version>
+		<rest.version>0.15.1-SNAPSHOT</rest.version>
 	</properties>
 
         <parent>
