@@ -9,7 +9,7 @@
 
 	<properties>
 		<mapreduce.version>0.15.2</mapreduce.version>
-		<rest.version>0.15.0</rest.version>
+		<rest.version>0.15.2</rest.version>
 	</properties>
 
         <parent>
